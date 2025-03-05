@@ -55,3 +55,14 @@ export const loginStore = async (req, res, next) => {
         return res.status(500).json({error: error.message});
     }
 }
+
+export const logoutStore = async (req, res, next) => {
+    const token = req.cookies.token || res.headers.authorization.split(' ')[1];
+
+    if(!token){
+        return res.status(401).json({message: "You need to login first"});
+    }
+    
+    res.clearCookie('token');
+    res.status(200).json({message: "Logged out successfully"});
+}

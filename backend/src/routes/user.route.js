@@ -1,6 +1,6 @@
 import express from 'express';
 import {body} from 'express-validator';
-import {loginUser, registerUser} from '../controllers/user.controller.js';
+import {loginUser, logoutUser, registerUser} from '../controllers/user.controller.js';
 import {authUser} from '../middlewares/auth.middleware.js';
 
 const router = express.Router();
@@ -19,5 +19,7 @@ router.post('/login', [
     body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long')
 ],
 loginUser);
+
+router.post('/logout', authUser,logoutUser);
 
 export default router;

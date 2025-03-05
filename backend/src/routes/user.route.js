@@ -20,6 +20,6 @@ router.post('/login', [
 ],
 loginUser);
 
-router.post('/logout', authUser,logoutUser);
+router.get('/logout', authUser,logoutUser);
 
 export default router;

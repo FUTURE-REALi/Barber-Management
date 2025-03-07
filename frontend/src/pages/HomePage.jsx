@@ -1,9 +1,7 @@
 import React from 'react'
-import NavBar from '../components/NavBar'
 const HomePage = () => {
 return (
     <div className="h-full w-full bg-gray-100">
-        <NavBar />
         <div className="flex-col items-center space-y-4 h-full w-full bg-gray-100">
             <div className="w-full bg-gray-100 p-4">
                 <form className="flex w-full py-4 justify-center">

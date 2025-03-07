@@ -1,7 +1,37 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-
+import axios from 'axios';
+import { User } from 'lucide-react';
 const NavBar = () => {
+
+  // const [showDropdown, setShowDropDown] = useState(false);
+  // const toggleDropdown = ()=>{
+  //   setShowDropDown((prev) => !prev);
+  // }
+
+  // const UserName = () => {
+
+  //   useEffect(() => {
+  //       const fetchUser = async () => {
+  //           try {
+  //               const token = localStorage.getItem('token');
+  //               const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/users/profile`, {
+  //                   headers: {
+  //                       Authorization: `Bearer ${token}`,
+  //                   },
+  //               });
+  //               setUser(response.data);
+  //           } catch (error) {
+  //               console.error('Error fetching user:', error.response?.data || error);
+  //           }
+  //       };
+  //       fetchUser();
+  //   }, []);
+  //   return user;
+  // }
+  // UserName();
+
+
   return (
     <div classname = "w-full bg-gray-800 p-4">
       <nav className="bg-gray-800 p-4">
@@ -21,9 +51,6 @@ const NavBar = () => {
             </Link>
             <Link to="/profile" className="text-white hover:text-gray-400">
               Profile
-            </Link>
-            <Link to="/login" className="text-white hover:text-gray-400">
-              Login
             </Link>
           </div>
         </div>

@@ -2,14 +2,14 @@ import React from 'react'
 
 const UserLogin = () => {
 return (
-    <div className="h-screen w-full flex justify-center bg-blue-300 items-center">
-        <div className="w-210 h-155 flex p-4 justify-center items-center bg-white rounded-3xl hadow-2xl shadow-gray-500">
+    <div className="h-screen w-full flex justify-center bg-[#FFF5E4] items-center">
+        <div className="w-210 h-155 flex p-4 justify-center items-center bg-[#F6F8D5] rounded-3xl shadow-2xl shadow-gray-500">
             <div className='h-full w-3/5 flex justify-center items-center rounded-3xl'>
-                <img src="https://th.bing.com/th/id/OIP.kL_7BYvLiSLByYB65qSH9QAAAA?w=134&h=201&c=7&r=0&o=5&dpr=1.3&pid=1.7" alt=""
+                <img src="https://avatars.mds.yandex.net/i?id=351e33e8d01f701a2ea15a49e7c361dae95a9e05-5233259-images-thumbs&n=13" alt=""
                     className='h-130 w-100 object-cover rounded-3xl shadow-lg' 
                 />
             </div>
-            <form className="h-full w-2/5 bg-white py-8 pr-5">
+            <form className="h-full w-2/5 py-8 pr-5">
                 <div className="flex flex-col space-y-2 w-full">
                     <div className='flex flex-col items-center mb-5'>
                         <h1 className="text-3xl font-bold mb-4" >PocketSalon</h1>
@@ -21,7 +21,7 @@ return (
                             type="email"
                             id="email"
                             name="email"
-                            className="px-4 py-2 bg-gray-100 rounded-lg focus:outline-none w-full"
+                            className="px-4 py-3 bg-[#FFF5E4] rounded-lg focus:outline-none w-full"
                             placeholder='Email address'
                         />
                     </div>
@@ -30,20 +30,36 @@ return (
                             type="password"
                             id="password"
                             name="password"
-                            className="px-4 py-2 bg-gray-100 rounded-lg focus:outline-none"
+                            className="px-4 py-3 bg-[#FFF5E4] rounded-lg focus:outline-none"
                             placeholder='Enter Password'
                         />
                     </div>
                     <h4 className='flex justify-end text-sm text-gray-400'>Forgot Password?</h4>
                     <button
                         type="submit"
-                        className="bg-blue-500 text-white px-4 py-2 rounded-lg cursor-pointer mt-8">
+                        className="text-white px-4 py-2 rounded-lg cursor-pointer mt-8 bg-[#FFA725]">
                         Login
                     </button>
                 </div>
-                <h4 className="flex justify-end mt-2"><a href="/register">New User? Register</a></h4>
+                <div className="flex items-center my-4">
+                    <hr className="flex-grow border-t border-gray-300" />
+                    <span className="px-3 text-gray-500 text-sm">Or Login with</span>
+                    <hr className="flex-grow border-t border-gray-300" />
+                </div>
+                <div className="flex justify-center space-x-4">
+                    <button className="w-40 px-4 py-2 rounded-lg cursor-pointer border-2 border-gray-200">
+                        Google
+                    </button>
+                    <button className="w-40 px-4 py-2 rounded-lg cursor-pointer border-2 border-gray-200">
+                        Email
+                    </button>
+                </div>
+                <div className="flex justify-center mt-4">
+                    <p className="text-sm text-gray-400">
+                        Don't have an account? <a href="#" className="text-[#FFA725]">Sign Up</a>
+                    </p>
+                </div>
             </form>
-            
         </div>
     </div>
 )

@@ -21,7 +21,7 @@ return (
                             type="email"
                             id="email"
                             name="email"
-                            className="px-4 py-3 bg-[#FFF5E4] rounded-lg focus:outline-none w-full"
+                            className="px-4 py-3 bg-[#FFF5E4] rounded-lg focus:outline-none w-full focus:bg-[#FFF5E4]"
                             placeholder='Email address'
                         />
                     </div>

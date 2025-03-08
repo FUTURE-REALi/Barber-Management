@@ -1,6 +1,37 @@
-import React from 'react'
+import React, { useContext, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import axios from 'axios'
+import { UserDataContext } from '../context/UserContext'
 
 const UserLogin = () => {
+    const [email,setEmail] = useState('')
+    const [password, setPassword] = useState('')
+
+    const navigate = useNavigate()
+
+    const {userData, setUserData} = useContext(UserDataContext)
+
+    const submitHandler = async (e) => {
+        e.preventDefault()
+        const user = {
+            email: email,
+            password: password
+        }
+
+
+        const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/users/login`, user)
+
+        if(response.status === 200){
+            const data = response.data
+            setUserData(data.user)
+            localStorage.setItem('token',data.token)
+            navigate('/home')
+        }
+
+        setEmail('')
+        setPassword('')
+    }
+
 return (
     <div className="h-screen w-full flex justify-center bg-[#FFF5E4] items-center">
         <div className="w-210 h-155 flex p-4 justify-center items-center bg-[#F6F8D5] rounded-3xl shadow-2xl shadow-gray-500">
@@ -9,7 +40,9 @@ return (
                     className='h-130 w-100 object-cover rounded-3xl shadow-lg' 
                 />
             </div>
-            <form className="h-full w-2/5 py-8 pr-5">
+            <form 
+            onSubmit={submitHandler}
+            className="h-full w-2/5 py-8 pr-5">
                 <div className="flex flex-col space-y-2 w-full">
                     <div className='flex flex-col items-center mb-5'>
                         <h1 className="text-3xl font-bold mb-4" >PocketSalon</h1>
@@ -20,7 +53,10 @@ return (
                         <input
                             type="email"
                             id="email"
-                            name="email"
+                            value = {email}
+                            onChange={(e) => {
+                                setEmail(e.target.value)
+                            }}
                             className="px-4 py-3 bg-[#FFF5E4] rounded-lg focus:outline-none w-full focus:bg-[#FFF5E4]"
                             placeholder='Email address'
                         />
@@ -29,7 +65,10 @@ return (
                         <input
                             type="password"
                             id="password"
-                            name="password"
+                            value={password}
+                            onChange={(e) => {
+                                setPassword(e.target.value)
+                            }}
                             className="px-4 py-3 bg-[#FFF5E4] rounded-lg focus:outline-none"
                             placeholder='Enter Password'
                         />
@@ -56,7 +95,7 @@ return (
                 </div>
                 <div className="flex justify-center mt-4">
                     <p className="text-sm text-gray-400">
-                        Don't have an account? <a href="#" className="text-[#FFA725]">Sign Up</a>
+                        Don't have an account? <Link to='/signup' className="text-[#FFA725]">Sign Up</Link>
                     </p>
                 </div>
             </form>

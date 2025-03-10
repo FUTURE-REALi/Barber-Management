@@ -39,7 +39,8 @@ const StoreSignUp = () => {
                     </button>
                 </div>
             </nav>
-            <div className='flex relative w-full h-180 justify-center' style={{ backgroundImage: "url('https://sun9-78.userapi.com/impg/jNX5D4wTLEG3Q_BZFkSimDbEimc2ddoxTcpheQ/S3NKSBUz__0.jpg?size=1096x692&quality=95&sign=bba2f6e9a4632c4296ace37b958a4897&c_uniq_tag=TWBx6lq19SpMCO9D8HlKS8dhmHhnPxZL60AK7wc1GCM&type=album')" }}>
+            <div className='flex relative w-full h-180 justify-center' 
+                style={{ backgroundImage: "url('https://sun9-78.userapi.com/impg/jNX5D4wTLEG3Q_BZFkSimDbEimc2ddoxTcpheQ/S3NKSBUz__0.jpg?size=1096x692&quality=95&sign=bba2f6e9a4632c4296ace37b958a4897&c_uniq_tag=TWBx6lq19SpMCO9D8HlKS8dhmHhnPxZL60AK7wc1GCM&type=album')" }}>
                 <div className='absolute flex flex-col item-center justify-center top-40 gap-5 w-full'>
                     <div className='text-center text-white px-8'>
                         <h1 className='text-5xl font-bold'>Expand your business</h1>

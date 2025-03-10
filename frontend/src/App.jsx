@@ -4,17 +4,18 @@ import HomePage from './pages/HomePage.jsx'
 import NavBar from './components/NavBar.jsx'
 import UserLogin from './pages/UserLogin.jsx'
 import UserSignUp from './pages/UserSignUp.jsx'
-
+import StoreSignUp from './pages/StoreSignUp.jsx'
 const App = () => {
   const location = useLocation();
 
   return (
     <div>
-      {location.pathname !== '/login' && location.pathname !== '/signup' && <NavBar />}
+      {location.pathname !== '/login' && location.pathname !== '/signup' && location.pathname !== '/registerstore' && <NavBar />}
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<UserLogin />} />
         <Route path="/signup" element={<UserSignUp />} />
+        <Route path="/registerstore" element={<StoreSignUp />}></Route>
       </Routes>
     </div>
   )

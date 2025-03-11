@@ -7,6 +7,7 @@ import UserSignUp from './pages/UserSignUp.jsx'
 import StoreLogin from './pages/StoreLogin.jsx'
 import StoreLandingPage from './pages/StoreLangingPage.jsx'
 import StoreRegister from './pages/StoreRegister.jsx'
+import StoreHomePage from './pages/StoreHomePage.jsx'
 const App = () => {
   const location = useLocation();
 
@@ -20,6 +21,7 @@ const App = () => {
         <Route path="/storelanding" element={<StoreLandingPage />}></Route>
         <Route path="/storelogin" element={<StoreLogin />}></Route>
         <Route path="/registerstore" element={<StoreRegister/>}></Route>
+        <Route path="/storehome" element={<StoreHomePage />}></Route>
       </Routes>
     </div>
   )

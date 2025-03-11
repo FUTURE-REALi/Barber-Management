@@ -22,7 +22,7 @@ export const registerStore = async (req, res, next) => {
         const newstore = await createStore(storename, ownername, password, email, address, phone);
         const token = newstore.generateToken();
         res.cookie('token', token);
-        res.status(201).json(newstore);
+        res.status(201).json({token,newstore});
     } 
     catch (error) {
         return res.status(500).json({error: error.message});
@@ -38,18 +38,13 @@ export const loginStore = async (req, res, next) => {
 
     try {
         const store = await storeModel.findOne({email});
-        if(!store) {
-            return res.status(400).json({error: "Store does not exist"});
-        }
-
         const isMatch = await store.matchPassword(password);
-        if(!isMatch) {
-            return res.status(400).json({error: "Invalid credentials"});
+        if(!store || !isMatch) {
+            return res.status(400).json({error: "Invalid Credentials"});
         }
-
         const token = store.generateToken();
         res.cookie('token', token);
-        res.status(200).json(store);
+        res.status(200).json({token,store});
     } 
     catch (error) {
         return res.status(500).json({error: error.message});

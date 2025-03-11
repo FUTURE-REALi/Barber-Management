@@ -26,7 +26,7 @@ const storeSchema = new Schema({
         lowercase: true,
     },
     address: {
-        street: {
+        building: {
             type: String,
             required: true
         },

@@ -47,6 +47,10 @@ const storeSchema = new Schema({
         type: Number,
         required: true
     },
+    services: [{
+        type: Schema.Types.ObjectId,
+        ref: "Service",
+    }],
 });
 
 storeSchema.pre("save", async function(next){

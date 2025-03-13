@@ -3,6 +3,10 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
 const storeSchema = new Schema({
+    status: {
+        type: Boolean,
+        default: false,
+    },
     storename: {
         type: String,
         required: true,
@@ -51,6 +55,14 @@ const storeSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: "Service",
     }],
+    openingTime: {
+        type: String,
+        required: true,
+    },
+    closingTime: {
+        type: String,
+        required: true,
+    },
 });
 
 storeSchema.pre("save", async function(next){
@@ -66,6 +78,11 @@ storeSchema.methods.matchPassword = async function(enteredPassword){
 
 storeSchema.methods.generateToken = function(){
     return jwt.sign({id: this._id}, process.env.JWT_SECRET, {expiresIn: process.env.JWT_EXPIRE});
+}
+
+storeSchema.methods.toggleStatus =function(){
+    this.status = !this.status;
+    return this.status;
 }
 
 const storeModel = mongoose.model("Store", storeSchema);

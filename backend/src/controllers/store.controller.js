@@ -61,3 +61,15 @@ export const logoutStore = async (req, res, next) => {
     res.clearCookie('token');
     res.status(200).json({message: "Logged out successfully"});
 }
+
+export const toggleStatus = async (req,res,next) => {
+    const store = await storeModel.findById(req.store._id);
+    const status = store.toggleStatus();
+
+    await store.save();
+    res.status(200).json({message: "Status updated successfully"});
+}
+
+export const setupStore = async (req,res,next) => {
+    
+}

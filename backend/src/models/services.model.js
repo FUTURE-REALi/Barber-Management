@@ -27,6 +27,16 @@ const serviceSchema = new Schema({
     }]
 });
 
+serviceSchema.methods.addStore = function(storeId) {
+    this.stores.push(storeId);
+    this.save();
+}
+
+serviceSchema.methods.removeStore = function(storeId) {
+    this.stores = this.stores.filter(store => store.toString() !== storeId.toString());
+    this.save();
+};
+
 const Service = mongoose.model("Service", serviceSchema);
 export default Service;
 

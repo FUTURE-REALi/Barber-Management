@@ -8,12 +8,13 @@ import StoreLogin from './pages/StoreLogin.jsx'
 import StoreLandingPage from './pages/StoreLangingPage.jsx'
 import StoreRegister from './pages/StoreRegister.jsx'
 import StoreHomePage from './pages/StoreHomePage.jsx'
+import StoreSetup from './pages/StoreSetup.jsx'
 const App = () => {
   const location = useLocation();
 
   return (
     <div>
-      {location.pathname !== '/login' && location.pathname !== '/signup' && location.pathname !== '/registerstore' && location.pathname !== '/storelogin' && location.pathname !== '/storelanding' && <NavBar />}
+      {location.pathname !== '/login' && location.pathname !== '/signup' && location.pathname !== '/registerstore' && location.pathname !== '/storelogin' && location.pathname !== '/storelanding' && location.pathname !== '/setupstore' && <NavBar />}
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<UserLogin />} />
@@ -22,6 +23,7 @@ const App = () => {
         <Route path="/storelogin" element={<StoreLogin />}></Route>
         <Route path="/registerstore" element={<StoreRegister/>}></Route>
         <Route path="/storehome" element={<StoreHomePage />}></Route>
+        <Route path="/setupstore" element={<StoreSetup/>}></Route>
       </Routes>
     </div>
   )

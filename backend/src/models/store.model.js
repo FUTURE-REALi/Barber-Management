@@ -29,6 +29,22 @@ const storeSchema = new Schema({
         trim: true,
         lowercase: true,
     },
+    phone: {
+        type: Number,
+        required: true
+    },
+    services: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Service',
+    }],
+    openingTime: {
+        type: String,
+        required: true,
+    },
+    closingTime: {
+        type: String,
+        required: true,
+    },
     address: {
         building: {
             type: String,
@@ -44,24 +60,8 @@ const storeSchema = new Schema({
         },
         zip: {
             type: Number,
-            required: true,
+            required: true
         }
-    },
-    phone: {
-        type: Number,
-        required: true
-    },
-    services: [{
-        type: Schema.Types.ObjectId,
-        ref: "Service",
-    }],
-    openingTime: {
-        type: String,
-        required: true,
-    },
-    closingTime: {
-        type: String,
-        required: true,
     },
 });
 
@@ -74,16 +74,25 @@ storeSchema.pre("save", async function(next){
 
 storeSchema.methods.matchPassword = async function(enteredPassword){
     return await bcrypt.compare(enteredPassword, this.password);
-}
+};
 
 storeSchema.methods.generateToken = function(){
-    return jwt.sign({id: this._id}, process.env.JWT_SECRET, {expiresIn: process.env.JWT_EXPIRE});
-}
+    return jwt.sign({_id: this._id}, process.env.JWT_SECRET, {expiresIn: process.env.JWT_EXPIRE});
+};
 
-storeSchema.methods.toggleStatus =function(){
+storeSchema.methods.toggleStatus = async function(){
     this.status = !this.status;
+    await this.save();
     return this.status;
-}
+};
+
+storeSchema.methods.addService = async function(serviceId) {
+    if (!this.services.includes(serviceId)) {
+        this.services.push(serviceId);
+        await this.save();
+    }
+    return this.services;
+};
 
 const storeModel = mongoose.model("Store", storeSchema);
 

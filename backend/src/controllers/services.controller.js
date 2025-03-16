@@ -1,5 +1,5 @@
 import Service from "../models/services.model.js";
-import { createStore } from "../services/services.service.js";
+import { createService } from "../services/services.service.js";
 
 export const insertService = async (req, res, next) => {
     const {name, description, price, duration} = req.body;
@@ -14,7 +14,7 @@ export const insertService = async (req, res, next) => {
     }
 
     try {
-        const service = await createStore(name,description,price,duration);
+        const service = await createService(name,description,price,duration);
         console.log(service);
         res.status(201).json(service);
     }

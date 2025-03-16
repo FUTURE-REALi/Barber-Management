@@ -9,6 +9,7 @@ import StoreLandingPage from './pages/StoreLangingPage.jsx'
 import StoreRegister from './pages/StoreRegister.jsx'
 import StoreHomePage from './pages/StoreHomePage.jsx'
 import StoreSetup from './pages/StoreSetup.jsx'
+import StoreProtectedWrapper from './components/StoreProtectedWrapper.jsx'
 const App = () => {
   const location = useLocation();
 
@@ -23,7 +24,12 @@ const App = () => {
         <Route path="/storelogin" element={<StoreLogin />}></Route>
         <Route path="/registerstore" element={<StoreRegister/>}></Route>
         <Route path="/storehome" element={<StoreHomePage />}></Route>
-        <Route path="/setupstore" element={<StoreSetup/>}></Route>
+        <Route path="/setupstore" element={
+          <StoreProtectedWrapper>
+            <StoreSetup/>
+          </StoreProtectedWrapper>
+          }>
+        </Route>
       </Routes>
     </div>
   )

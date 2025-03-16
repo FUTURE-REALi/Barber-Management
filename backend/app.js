@@ -21,7 +21,10 @@ app.get('/', (req, res) => {
 
 import userRoute from './src/routes/user.route.js';
 import storeRoute from './src/routes/store.route.js';
+import serviceRoute from './src/routes/services.route.js';
+
 app.use('/users', userRoute);
 app.use('/stores', storeRoute);
+app.use('/services', serviceRoute);
 
 export default app;

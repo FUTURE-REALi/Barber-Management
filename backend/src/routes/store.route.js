@@ -33,4 +33,6 @@ router.post('/add-service', authStore, [
 ], includedServices);
 
 router.get('/get-store', authStore, getStore);
+
+router.put('/update-store', authStore,)
 export default router;

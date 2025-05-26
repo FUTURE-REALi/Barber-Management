@@ -19,7 +19,6 @@ export const registerUser = async (req, res, next) => {
     if (isAlreadyUser) {
         return res.status(400).json({ message: "User already exists" });
     }
-
     try {
         const newUser = await createUser(fullname, username, email, password);
         const token = newUser.generateToken();
@@ -61,5 +60,17 @@ export const loginUser = async (req, res, next) => {
 export const logoutUser = async (req, res, next) => {
     res.clearCookie('token');
     res.status(200).json({message: "Logged out successfully"});
+}
+
+export const getUserProfile = async (req, res, next) => {
+    try {
+        const user = await userModel.findById(req.user._id).select('-password');
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        res.status(200).json(user);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
 }
 

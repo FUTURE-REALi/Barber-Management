@@ -50,7 +50,7 @@ const NavBar = () => {
               History
             </Link>
             <Link to="/profile" className="text-white hover:text-gray-400">
-              Profile
+              Login
             </Link>
           </div>
         </div>

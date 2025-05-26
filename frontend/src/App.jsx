@@ -10,6 +10,8 @@ import StoreRegister from './pages/StoreRegister.jsx'
 import StoreHomePage from './pages/StoreHomePage.jsx'
 import StoreSetup from './pages/StoreSetup.jsx'
 import StoreProtectedWrapper from './components/StoreProtectedWrapper.jsx'
+import UserProtectedWrapper from './components/UserProtectedWrapper.jsx'
+import UserProfile from './pages/UserProfile.jsx'
 const App = () => {
   const location = useLocation();
 
@@ -29,6 +31,12 @@ const App = () => {
             <StoreSetup/>
           </StoreProtectedWrapper>
           }>
+        </Route>
+        <Route path = "/getuserprofile" element = {
+          <UserProtectedWrapper>
+            <UserProfile/>
+          </UserProtectedWrapper>
+        }>
         </Route>
       </Routes>
     </div>

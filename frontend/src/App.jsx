@@ -38,6 +38,12 @@ const App = () => {
           </UserProtectedWrapper>
         }>
         </Route>
+        <Route path = "/getuserprofile/:menu/:option" element = {
+          <UserProtectedWrapper>
+            <UserProfile/>
+          </UserProtectedWrapper>
+        }>
+        </Route>
       </Routes>
     </div>
   )

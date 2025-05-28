@@ -116,3 +116,16 @@ export const getStore = async (req,res,next) => {
         return res.status(500).json({error: error.message});
     }
 }
+
+export const getAllStores = async (req, res, next) => {
+    try {
+        const stores = await storeModel.find().populate('services');
+        res.status(200).json({
+            message: "Stores retrieved successfully",
+            count: stores.length,
+            stores: stores
+        });
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+}

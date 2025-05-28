@@ -25,6 +25,28 @@ const userSchema = new Schema({
         trim: true,
         lowercase: true,
     },
+    address: {
+        building: {
+            type: String,
+        },
+        street: {
+            type: String,
+        },
+        city: {
+            type: String,
+        },
+        state: {
+            type: String,
+        },
+    },
+    ratings: [{
+        type: Schema.Types.ObjectId,
+        ref: "Rating"
+    }],
+    reviews: [{
+        type: Schema.Types.ObjectId,
+        ref: "Review"
+    }],
 });
 
 userSchema.pre("save", async function(next){

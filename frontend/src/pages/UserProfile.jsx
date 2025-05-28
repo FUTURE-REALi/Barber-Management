@@ -82,17 +82,19 @@ const UserProfile = () => {
         </div>
       );
     }
-    if (selectedMenu === 0 && selectedOption === 'Reviews') {
-      return <ReviewsSection />;
-    }
-    if (selectedMenu === 0 && selectedOption === 'Ratings') {
-      return <RatingsSection />;
-    }
-    if (selectedMenu === 0 && selectedOption === 'Comments') {
-      return <CommentsSection />;
-    }
-    if (selectedMenu === 0 && selectedOption === 'Favourite Salon') {
-      return <FavouriteSalon />;
+    if (selectedMenu === 0) {
+      if(selectedOption === 'Reviews') {
+        return <ReviewsSection />;
+      }
+      if (selectedOption === 'Ratings') {
+        return <RatingsSection />;
+      }
+      if (selectedOption === 'Comments') {
+        return <CommentsSection />;
+      }
+      if (selectedOption === 'Favourite Salon') {
+        return <FavouriteSalon />;
+      }
     }
     if (selectedMenu === 1){
       if (selectedOption === 'Upcoming') {

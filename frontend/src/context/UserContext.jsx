@@ -1,5 +1,5 @@
-import React, { createContext, useState } from 'react'
-
+import React, { createContext, useEffect, useState } from 'react'
+import axios from 'axios';
 export const UserDataContext = createContext()
 
 const UserContext = ({children}) => {
@@ -8,6 +8,29 @@ const UserContext = ({children}) => {
         username: '',
         email: ''
     });
+
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (token) {
+          axios.get(`${import.meta.env.VITE_BASE_URL}/users/profile`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            }).then((response) => {
+                if (response.status === 200) {
+                  setUserData(response.data);
+                }
+            }
+            ).catch((error) => {
+              setUserData({
+                fullname: '',
+                username: '',
+                email: ''
+              });
+            })
+        }
+    }
+    , []);
 
   return (
     <div>

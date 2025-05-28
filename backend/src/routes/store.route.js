@@ -1,6 +1,6 @@
 import express from "express";
 import { body} from "express-validator";
-import {getStore, includedServices, loginStore, logoutStore, registerStore} from "../controllers/store.controller.js";
+import {getAllStores, getStore, includedServices, loginStore, logoutStore, registerStore} from "../controllers/store.controller.js";
 import { authStore } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
@@ -33,6 +33,7 @@ router.post('/add-service', authStore, [
 ], includedServices);
 
 router.get('/get-store', authStore, getStore);
+router.get('/getallstores',getAllStores);
 
 router.put('/update-store', authStore,)
 export default router;

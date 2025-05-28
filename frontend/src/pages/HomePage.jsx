@@ -1,5 +1,31 @@
-import React from 'react'
+import React, { useContext, useState } from 'react'
+import axios from 'axios';
+import { useEffect } from 'react';
+import { UserDataContext } from '../context/UserContext';
+import { Link } from 'react-router-dom';
 const HomePage = () => {
+    const [stores, setStores] = useState([]);
+    const [trustedStores, setTrustedStores] = useState([]);
+    const [recommendedStores, setRecommendedStores] = useState([]);
+    const [searchQuery, setSearchQuery] = useState('');
+    const {userData} = useContext(UserDataContext);
+
+    useEffect(() => {
+        const fetchStores = async () => {
+            try {
+                const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/getallstores`);
+                if (response.status === 200) {
+                    setStores(response.data);
+                }
+            } catch (error) {
+                console.error('Error fetching stores:', error);
+            }
+        };
+        fetchStores();
+    }, []);
+    
+
+
 return (
     <div className="h-full w-full bg-gray-100">
         <div className="flex-col items-center space-y-4 h-full w-full bg-gray-100">
@@ -17,7 +43,7 @@ return (
                     </button>
                 </form>
             </div>
-            <div className="flex flex-col items-center space-y-4">
+            {userData?.username !== '' && <div className="flex flex-col items-center space-y-4">
                 <h1 className="text-2xl">Your Trusted Picks</h1>
                 <div className="flex space-x-4 h-60">
                     <div>
@@ -42,7 +68,7 @@ return (
                         </div>
                     </div>
                 </div>
-            </div>
+            </div>}
             <div className="flex flex-col items-center space-y-4">
                 <h1 className="text-2xl">Recommended</h1>
                 <div className="flex space-x-8 h-80">

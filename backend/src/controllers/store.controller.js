@@ -5,13 +5,13 @@ import Service from "../models/services.model.js";
 import { createService } from "../services/services.service.js";
 
 export const registerStore = async (req, res, next) => {
+
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
     }
 
-    const { storename, ownername, password, email, address, phone, openingTime, closingTime} = req.body;
-
+    const { storename, ownername, password, email, address, phone} = req.body;
 
 
     const alreadyExists = await storeModel.findOne({$or: [{email: email}, {address: address}]});
@@ -21,6 +21,8 @@ export const registerStore = async (req, res, next) => {
     }
 
     try {
+        const openingTime ="09:00";
+        const closingTime ="21:00";
         const newstore = await createStore(storename, ownername, password, email, address, phone, openingTime, closingTime);
         const token = newstore.generateToken();
         res.cookie('token', token);
@@ -126,6 +128,41 @@ export const getAllStores = async (req, res, next) => {
             stores: stores
         });
     } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+}
+
+export const updateStore = async (req, res, next) => {
+    try {
+        const store = req.store;
+        if (!store) {
+            return res.status(404).json({ error: "Store not found" });
+        }
+
+        const { storename, ownername, email, address, phone, openingTime, closingTime} = req.body;
+        const services = req.body.services || [];
+        console.log(services);
+        if (services.length > 0) {
+            for (let i = 0; i < services.length; i++) {
+                let service = await Service.findById(services[i]);
+                await store.addService(service._id);
+                service.addStore(store._id);
+            }
+        }
+        store.storename = storename || store.storename;
+        store.ownername = ownername || store.ownername;
+        store.email = email || store.email;
+        store.address = address || store.address;
+        store.phone = phone || store.phone;
+        store.openingTime = openingTime || store.openingTime;
+        store.closingTime = closingTime || store.closingTime;
+
+
+        await store.save();
+
+        res.status(200).json({ message: "Store updated successfully", store });
+    } catch (error) {
+        console.log(error);
         return res.status(500).json({ error: error.message });
     }
 }

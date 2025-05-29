@@ -32,6 +32,12 @@ const App = () => {
           </StoreProtectedWrapper>
           }>
         </Route>
+        <Route path = "/setupstore/:step" element = {
+          <StoreProtectedWrapper>
+            <StoreSetup/>
+          </StoreProtectedWrapper>
+        }>
+        </Route>
         <Route path = "/getuserprofile" element = {
           <UserProtectedWrapper>
             <UserProfile/>

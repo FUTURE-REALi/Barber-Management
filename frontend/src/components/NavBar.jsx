@@ -18,7 +18,7 @@ const NavBar = () => {
     setShowDropdown(!showDropdown);
   }
   return (
-    <div classname = "w-full bg-[#FFA725] p-4">
+    <div className = "w-full bg-[#FFA725]">
       <nav className="bg-[#FFA725] p-4">
         <div className="container mx-auto flex justify-between items-center">
           <Link to="/" className="text-white text-2xl font-bold">

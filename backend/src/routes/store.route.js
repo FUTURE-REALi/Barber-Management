@@ -1,6 +1,6 @@
 import express from "express";
 import { body} from "express-validator";
-import {getAllStores, getStore, includedServices, loginStore, logoutStore, registerStore} from "../controllers/store.controller.js";
+import {getAllStores, getStore, includedServices, loginStore, logoutStore, registerStore, updateStore} from "../controllers/store.controller.js";
 import { authStore } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
@@ -12,8 +12,6 @@ router.post('/register', [
     body('password').isLength({min: 6}).withMessage('Password must be at least 6 characters long'),
     body('address').not().isEmpty().withMessage('Address is required'),
     body('phone').matches(/^\d{10}$/).withMessage('Please provide a valid 10-digit phone number'),
-    body('openingTime').not().isEmpty().withMessage('Opening time is required'),
-    body('closingTime').not().isEmpty().withMessage('Closing time is required'),
 ],
 registerStore);
 
@@ -35,5 +33,5 @@ router.post('/add-service', authStore, [
 router.get('/get-store', authStore, getStore);
 router.get('/getallstores',getAllStores);
 
-router.put('/update-store', authStore,)
+router.put('/update-store', authStore,updateStore)
 export default router;

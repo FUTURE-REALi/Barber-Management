@@ -31,7 +31,7 @@ router.post('/add-service', authStore, [
 ], includedServices);
 
 router.get('/get-store', authStore, getStore);
-router.get('/getallstores',getAllStores);
+router.get('/getallstores', getAllStores);
 
 router.put('/update-store', authStore,updateStore)
 export default router;

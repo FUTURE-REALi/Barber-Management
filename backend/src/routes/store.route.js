@@ -1,7 +1,7 @@
 import express from "express";
 import { body} from "express-validator";
-import {getAllStores, getStore, includedServices, loginStore, logoutStore, registerStore, updateStore} from "../controllers/store.controller.js";
-import { authStore } from "../middlewares/auth.middleware.js";
+import {createStoreReview, getAllStores, getStore, getStorebyServices, getStoreReviews, includedServices, loginStore, logoutStore, registerStore, updateStore} from "../controllers/store.controller.js";
+import { authStore, authUser } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
@@ -30,8 +30,13 @@ router.post('/add-service', authStore, [
     body('duration').not().isEmpty().withMessage('Duration is required'),
 ], includedServices);
 
-router.get('/get-store', authStore, getStore);
+router.get('/get-store/:storeId', getStore);
 router.get('/getallstores', getAllStores);
-
+router.get('/getstorebyservice', getStorebyServices);
 router.put('/update-store', authStore,updateStore)
+router.get('/:storeId/reviews',getStoreReviews);
+router.post('/:storeId/:serviceId/reviews', authUser, [
+    body('reviewText').not().isEmpty().withMessage('Review is required'),
+    body('rating').isInt({ min: 1, max: 5 }).withMessage('Rating must be between 1 and 5'),
+],createStoreReview);
 export default router;

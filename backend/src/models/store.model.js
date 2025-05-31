@@ -63,6 +63,14 @@ const storeSchema = new Schema({
             required: true
         }
     },
+    rating: {
+        type: Schema.Types.ObjectId,
+        ref: 'Rating',
+    },
+    reviews: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Review',
+    }],
 });
 
 storeSchema.pre("save", async function(next){
@@ -93,6 +101,7 @@ storeSchema.methods.addService = async function(serviceId) {
     }
     return this.services;
 };
+
 
 const storeModel = mongoose.model("Store", storeSchema);
 

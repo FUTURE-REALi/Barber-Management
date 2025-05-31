@@ -17,9 +17,9 @@ const ratingSchema = new Schema({
         min: 1,
         max: 5
     },
-    comment: {
-        type: String,
-        trim: true
+    review: {
+        type: Schema.Types.ObjectId,
+        ref: "Review",
     },
     store: {
         type: Schema.Types.ObjectId,

@@ -3,6 +3,7 @@ import { validationResult } from "express-validator";
 import { createStore } from "../services/store.service.js";
 import Service from "../models/services.model.js";
 import { createService } from "../services/services.service.js";
+import { createReview } from "../services/reviews.service.js";
 
 export const registerStore = async (req, res, next) => {
 
@@ -107,15 +108,21 @@ export const includedServices = async (req,res,next) => {
 }
 
 export const getStore = async (req,res,next) => {
-    try{
-        if(!req.store){
-            return res.status(404).json({error: "Store not found"});
-        }
-        res.status(200).json(req.store);
-        console.log(req.store);
+    const storeId = req.params.storeId || req.query.storeId;
+    
+    if (!storeId) {
+        return res.status(400).json({ error: "Store ID is required" });
     }
-    catch(error){
-        return res.status(500).json({error: error.message});
+
+    try {
+        const store = await storeModel.findById(storeId).populate('services');
+        if (!store) {
+            return res.status(404).json({ error: "Store not found" });
+        }
+        res.status(200).json({ message: "Store retrieved successfully", store });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ error: error.message });
     }
 }
 
@@ -161,6 +168,91 @@ export const updateStore = async (req, res, next) => {
         await store.save();
 
         res.status(200).json({ message: "Store updated successfully", store });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ error: error.message });
+    }
+}
+
+export const getStorebyServices = async (req, res, next) => {
+    try {
+        const service  = req.query.service;
+        if (!service) {
+            return res.status(400).json({ error: "Service ID is required" });
+        }
+        const serviceId = await Service.findOne({ name: { $regex: `^${service}$`, $options: 'i' } });
+        if (!serviceId) {
+            return res.status(404).json({ error: "Service not found" });
+        }
+
+        const stores = await storeModel.find({ services: serviceId }).populate('services');
+        if (stores.length === 0) {
+            return res.status(404).json({ message: "No stores found for this service" });
+        }
+
+        res.status(200).json({
+            message: "Stores retrieved successfully",
+            count: stores.length,
+            stores: stores
+        });
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+}
+
+export const getStoreReviews = async (req, res, next) => {
+    const storeId = req.params.storeId || req.query.storeId;
+    if (!storeId) {
+        return res.status(400).json({ error: "Store ID is required" });
+    }
+
+    try {
+        const store = await storeModel.findById(storeId).populate('reviews');
+        if (!store) {
+            return res.status(404).json({ error: "Store not found" });
+        }
+        res.status(200).json({ message: "Store reviews retrieved successfully", reviews: store.reviews });
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+}
+
+export const createStoreReview = async (req, res, next) => {
+    const storeId = req.params.storeId || req.query.storeId;
+    const serviceId = req.params.serviceId || req.query.serviceId;
+
+    if (!req.user) {
+        return res.status(401).json({ error: "You need to be logged in to add a review" });
+    }
+    if (!serviceId) {
+        return res.status(400).json({ error: "Service ID is required" });
+    }
+
+    if (!storeId) {
+        return res.status(400).json({ error: "Store ID is required" });
+    }
+
+    const { reviewText , rating } = req.body;
+    if (!reviewText || !rating) {
+        return res.status(400).json({ error: "Review and rating are required" });
+    }
+
+    try {
+        const store = await storeModel.findById(storeId);
+        const service = await Service.findById(serviceId);
+        if (!service) {
+            return res.status(404).json({ error: "Service not found" });
+        }
+        if (!store) {
+            return res.status(404).json({ error: "Store not found" });
+        }
+
+        const newReview = await createReview(req.user, service , reviewText, rating, store, new Date());
+        store.reviews.push(newReview);
+        await store.save();
+
+        res.status(201).json({ message: "Review added successfully", review: newReview });
+        console.log("Review added successfully:", newReview);
     } catch (error) {
         console.log(error);
         return res.status(500).json({ error: error.message });

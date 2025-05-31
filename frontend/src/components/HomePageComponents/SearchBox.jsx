@@ -13,13 +13,24 @@ const SearchBox = ({ searchQuery, setSearchQuery, onSearch }) => {
         return;
       }
       try {
-        const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/stores/getallstores`);
-        if (response.status === 200 && Array.isArray(response.data.stores)) {
-          const filtered = response.data.stores.filter(store =>
-            store.storename.toLowerCase().includes(searchQuery.toLowerCase())
+
+        const allStoresRes = await axios.get(`${import.meta.env.VITE_BASE_URL}/stores/getallstores`);
+        let nameMatches = [];
+        if (allStoresRes.status === 200 && Array.isArray(allStoresRes.data.stores)) {
+          nameMatches = allStoresRes.data.stores.filter(store =>
+            store.storename.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (Array.isArray(store.services) &&
+              store.services.some(service =>
+                service.name.toLowerCase().includes(searchQuery.toLowerCase())
+              )
+            )
           );
-          setSuggestions(filtered.slice(0, 5));
         }
+        setSuggestions(nameMatches);
+        if (nameMatches.length === 0) {
+          setShowDropdown(false);
+        }
+
       } catch (error) {
         setSuggestions([]);
       }
@@ -45,6 +56,9 @@ const SearchBox = ({ searchQuery, setSearchQuery, onSearch }) => {
   const handleSuggestionClick = (storename) => {
     setSearchQuery(storename);
     setShowDropdown(false);
+    if (onSearch) {
+      onSearch({preventDefault: () => {} });
+    }
   };
 
   return (
@@ -52,7 +66,7 @@ const SearchBox = ({ searchQuery, setSearchQuery, onSearch }) => {
       <form className="flex w-4/5 py-4" onSubmit={onSearch} autoComplete="off">
         <input
           type="text"
-          placeholder="Search For Salon"
+          placeholder="Search For Salon or Service"
           value={searchQuery}
           onChange={handleInputChange}
           className="w-full px-4 py-2 focus:outline-none border-gray-300 border-2 rounded-l-lg"

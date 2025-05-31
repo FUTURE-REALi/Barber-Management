@@ -87,7 +87,7 @@ const HomePage = () => {
                                         <h3 className="font-semibold text-lg">{store.storename}</h3>
                                         <p className="text-gray-600">{store.address?.city || 'Unknown City'}</p>
                                     </div>
-                                    <Link to={`/store/${store._id}`} className="mt-2 text-blue-500 hover:underline text-sm">
+                                    <Link to={`/store/${store._id}/${store.storename}`} className="mt-2 text-blue-500 hover:underline text-sm">
                                         View Details
                                     </Link>
                                 </div>

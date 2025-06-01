@@ -31,9 +31,12 @@ const StoreLogin = () => {
         ownername: data.store.ownername,
         address: data.store.address,
         phone: data.store.phone,
+        id: data.store._id,
+        services: data.store.services || [],
       }
       setStoreData(newdata);
       localStorage.setItem('token', data.token);
+      localStorage.setItem('role', 'store');
       console.log(data);
       navigate('/storehome');
     }

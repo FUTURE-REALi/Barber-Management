@@ -1,6 +1,6 @@
 import express from "express";
 import { body} from "express-validator";
-import {createStoreReview, getAllStores, getStore, getStoreAverageRating, getStorebyServices, getStoreReviews, includedServices, loginStore, logoutStore, registerStore, updateStore} from "../controllers/store.controller.js";
+import {createStoreReview, getAllStores, getStore, getStoreAverageRating, getStorebyServices, getStoreProfile, getStoreReviews, includedServices, loginStore, logoutStore, registerStore, updateStore} from "../controllers/store.controller.js";
 import { authStore, authUser } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
@@ -29,7 +29,7 @@ router.post('/add-service', authStore, [
     body('price').not().isEmpty().withMessage('Price is required'),
     body('duration').not().isEmpty().withMessage('Duration is required'),
 ], includedServices);
-
+router.get('/getstoreprofile', authStore,getStoreProfile);
 router.get('/get-store/:storeId', getStore);
 router.get('/getallstores', getAllStores);
 router.get('/getstorebyservice', getStorebyServices);

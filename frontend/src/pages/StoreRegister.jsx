@@ -40,6 +40,7 @@ const StoreRegister = () => {
       const data = response.data;
       setStoreData(data.newstore);
       localStorage.setItem('token', data.token);
+      localStorage.setItem('role', 'store');
       console.log(data);
       navigate('/storehome');
     }

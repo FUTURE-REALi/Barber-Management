@@ -286,3 +286,19 @@ export const getStoreAverageRating = async(req, res, next) => {
     }
 }
 
+export const getStoreProfile = async (req, res, next) => {
+    const store = req.store;
+    if (!store) {
+        return res.status(404).json({ error: "Store not found" });
+    }
+    try {
+        const storeProfile = await storeModel.findById(store._id).populate('services rating');
+        if (!storeProfile) {
+            return res.status(404).json({ error: "Store profile not found" });
+        }
+        res.status(200).json({ message: "Store profile retrieved successfully", store: storeProfile });
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+}
+

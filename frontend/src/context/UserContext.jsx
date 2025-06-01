@@ -11,7 +11,8 @@ const UserContext = ({children}) => {
 
     useEffect(() => {
         const token = localStorage.getItem('token');
-        if (token) {
+        const role = localStorage.getItem('role');
+        if (token && role === 'user') {
           axios.get(`${import.meta.env.VITE_BASE_URL}/users/profile`, {
                 headers: {
                     'Authorization': `Bearer ${token}`

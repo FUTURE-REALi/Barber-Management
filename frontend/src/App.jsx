@@ -14,12 +14,27 @@ import UserProtectedWrapper from './components/UserProtectedWrapper.jsx'
 import UserProfile from './pages/UserProfile.jsx'
 import StoreDetailPage from './pages/StoreDetailPage.jsx'
 import Footer from './components/Footer.jsx'
+
 const App = () => {
   const location = useLocation();
 
+  // Hide NavBar on these routes
+  const hideNavBarRoutes = [
+    '/login',
+    '/signup',
+    '/registerstore',
+    '/storelogin',
+    '/storelanding',
+    '/setupstore'
+  ];
+  // Also hide on /setupstore/:step
+  const shouldHideNavBar =
+    hideNavBarRoutes.includes(location.pathname) ||
+    location.pathname.startsWith('/setupstore/');
+
   return (
-    <div className='min=h-screen flex flex-col'>
-      {location.pathname !== '/login' && location.pathname !== '/signup' && location.pathname !== '/registerstore' && location.pathname !== '/storelogin' && location.pathname !== '/storelanding' && location.pathname !== '/setupstore' && <NavBar />}
+    <div className='min-h-screen flex flex-col'>
+      {!shouldHideNavBar && <NavBar />}
       <div className='flex-1'>
         <Routes>
           <Route path="/" element={<HomePage />} />

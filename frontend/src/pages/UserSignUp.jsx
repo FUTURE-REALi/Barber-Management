@@ -24,6 +24,7 @@ const UserSignUp = () => {
             const data = response.data
             setUserData(data.newUser)
             localStorage.setItem('token',data.token)
+            localStorage.setItem('role', 'user')
             navigate('/home')
         }
 

@@ -10,17 +10,20 @@ const StoreProtectedWrapper = ({ children }) => {
   const [isloading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    console.log("StoreProtectedWrapper useEffect called");
+    console.log("Token:", token);
     if (!token) {
       navigate('/storelogin');
     }
 
-    axios.get(`${import.meta.env.VITE_BASE_URL}/stores/get-store`, {
+    axios.get(`${import.meta.env.VITE_BASE_URL}/stores/getstoreprofile`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
     }).then((response) => {
       if (response.status === 200) {
-        setStoreData(response.data);
+        setStoreData(response.data.store);
+        console.log("Store Data:", storeData);
         setIsLoading(false);
       }
     }).catch((error) => {

@@ -13,7 +13,8 @@ const StoreContext = ({children}) => {
       state: '',
       zip: '',
     },
-    phone: ''
+    phone: '',
+    id: '',
   });
 
   return (

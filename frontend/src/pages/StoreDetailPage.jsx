@@ -157,7 +157,7 @@ const StoreDetailPage = () => {
       </div>
       <hr />
       {/* Content Section */}
-      <div className='flex items-center justify-start w-full px-16 py-4'>
+      <div className='flex items-center justify-start w-full py-4'>
         {option === 'bookonline' && <BookOnline storeId={storeId} />}
         {option === 'reviews' && <Reviews storeId={storeId} services={services} />}
         {option === 'photos' && <Photos storeId={storeId} />}

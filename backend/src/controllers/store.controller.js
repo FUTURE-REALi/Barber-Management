@@ -3,7 +3,8 @@ import { validationResult } from "express-validator";
 import { createStore } from "../services/store.service.js";
 import Service from "../models/services.model.js";
 import { createService } from "../services/services.service.js";
-import { createReview } from "../services/reviews.service.js";
+import { createRating } from "../services/ratings.service.js";
+import Rating from "../models/ratings.model.js";
 
 export const registerStore = async (req, res, next) => {
 
@@ -207,11 +208,12 @@ export const getStoreReviews = async (req, res, next) => {
     }
 
     try {
-        const store = await storeModel.findById(storeId).populate('reviews');
+        const store = await storeModel.findById(storeId).populate('rating');
+        const ratings = await Rating.find({ store: storeId }).populate('user service');
         if (!store) {
             return res.status(404).json({ error: "Store not found" });
         }
-        res.status(200).json({ message: "Store reviews retrieved successfully", reviews: store.reviews });
+        res.status(200).json({ message: "Store reviews retrieved successfully", ratings });
     } catch (error) {
         return res.status(500).json({ error: error.message });
     }
@@ -247,14 +249,40 @@ export const createStoreReview = async (req, res, next) => {
             return res.status(404).json({ error: "Store not found" });
         }
 
-        const newReview = await createReview(req.user, service , reviewText, rating, store, new Date());
-        store.reviews.push(newReview);
-        await store.save();
+        const newRating = await createRating(req.user, service, reviewText, rating, store);
+        if (!newRating) {
+            return res.status(500).json({ error: "Failed to create review" });
+        }
 
-        res.status(201).json({ message: "Review added successfully", review: newReview });
-        console.log("Review added successfully:", newReview);
+        res.status(201).json({ message: "Review added successfully", rating: newRating });
+        console.log("Review added successfully:", newRating);
     } catch (error) {
         console.log(error);
         return res.status(500).json({ error: error.message });
     }
 }
+
+export const getStoreAverageRating = async(req, res, next) => {
+    const storeId = req.params.storeId || req.query.storeId;
+    if (!storeId) {
+        return res.status(400).json({ error: "Store ID is required" });
+    }
+
+    try {
+        const ratings = await Rating.find({ store: storeId });
+        if (ratings.length === 0) {
+            return res.status(200).json({ average: 0, count: 0, message: "No ratings found for this store" });
+        }
+        const total = ratings.reduce((acc, rating) => acc + rating.rating, 0);
+        const averageRating = total / ratings.length;
+        const averageRatingRounded = Math.round(averageRating * 10) / 10; // Round to one decimal place
+        res.status(200).json({
+            average: averageRatingRounded,
+            count: ratings.length,
+            message: "Average rating retrieved successfully"
+        });
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+}
+

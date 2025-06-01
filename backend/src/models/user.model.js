@@ -43,10 +43,6 @@ const userSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: "Rating"
     }],
-    reviews: [{
-        type: Schema.Types.ObjectId,
-        ref: "Review"
-    }],
 });
 
 userSchema.pre("save", async function(next){

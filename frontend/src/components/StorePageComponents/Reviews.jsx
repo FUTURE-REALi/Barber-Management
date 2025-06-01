@@ -16,7 +16,7 @@ const Reviews = ({ storeId, services }) => {
       try {
         const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/stores/${storeId}/reviews`);
         if (res.status === 200) {
-          setReviews(res.data.reviews || []);
+          setReviews(res.data.ratings || []);
         }
       } catch (err) {
         setReviews([]);
@@ -27,6 +27,8 @@ const Reviews = ({ storeId, services }) => {
     if (storeId) fetchReviews();
   }, [storeId]);
 
+  console.log(reviews)
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!reviewInput.trim()) return;
@@ -36,7 +38,6 @@ const Reviews = ({ storeId, services }) => {
       navigate('/login');
       return;
     }
-    console.log("button clicked");
     try {
       const res = await axios.post(`${import.meta.env.VITE_BASE_URL}/stores/${storeId}/${serviceId}/reviews`, 
       {
@@ -115,7 +116,7 @@ const Reviews = ({ storeId, services }) => {
           {reviews.map((review, idx) => (
             <div key={idx} className="border rounded p-3 bg-gray-50">
               <div className="flex items-center gap-2 mb-1">
-                <span className="font-semibold">{review.user || 'Anonymous'}</span>
+                <span className="font-semibold">{review.user.username || 'Anonymous'}</span>
                 <span className="text-yellow-500">{"★".repeat(review.rating)}{"☆".repeat(5 - review.rating)}</span>
               </div>
               <p className="text-gray-800">{review.review}</p>

@@ -22,10 +22,6 @@ const serviceSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: "Rating",
     },
-    reviews: [{
-        type: Schema.Types.ObjectId,
-        ref: "Review",
-    }],
     stores: [{
         type: Schema.Types.ObjectId,
         ref: "Store",

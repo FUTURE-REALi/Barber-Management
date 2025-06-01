@@ -18,8 +18,11 @@ const ratingSchema = new Schema({
         max: 5
     },
     review: {
-        type: Schema.Types.ObjectId,
-        ref: "Review",
+        type: String,
+        required: true,
+        trim: true,
+        minlength: 1,
+        maxlength: 500
     },
     store: {
         type: Schema.Types.ObjectId,
@@ -57,6 +60,10 @@ ratingSchema.methods.getAverageRatingForEachServiceForStore = async function(sto
     }
 
     return serviceRatings;
+}
+
+ratingSchema.methods.getRatingsByUser = async function(userId) {
+    return await this.model("Rating").find({ user: userId }).populate('service store');
 }
 
 const Rating = mongoose.model("Rating", ratingSchema);

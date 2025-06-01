@@ -25,7 +25,8 @@ const App = () => {
     '/registerstore',
     '/storelogin',
     '/storelanding',
-    '/setupstore'
+    '/setupstore',
+    '/storehomepage',
   ];
   // Also hide on /setupstore/:step
   const shouldHideNavBar =
@@ -80,6 +81,11 @@ const App = () => {
           <Route path="/store/:storeId/:storeName/:option" element={
             <StoreDetailPage />
           } />
+          <Route path= "/storehomepage" element = {
+            <StoreProtectedWrapper>
+              <StoreHomePage />
+            </StoreProtectedWrapper>
+          }></Route>
         </Routes>
       </div>
       <Footer />

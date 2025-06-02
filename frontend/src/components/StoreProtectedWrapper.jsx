@@ -6,14 +6,13 @@ import { useNavigate } from 'react-router-dom'
 const StoreProtectedWrapper = ({ children }) => {
   const token = localStorage.getItem('token')
   const navigate = useNavigate();
-  const { storeData, setStoreData } = useContext(StoreDataContext);
+  const { setStoreData } = useContext(StoreDataContext); // Only use setStoreData here
   const [isloading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    console.log("StoreProtectedWrapper useEffect called");
-    console.log("Token:", token);
     if (!token) {
       navigate('/storelogin');
+      return;
     }
 
     axios.get(`${import.meta.env.VITE_BASE_URL}/stores/getstoreprofile`, {
@@ -22,28 +21,19 @@ const StoreProtectedWrapper = ({ children }) => {
       }
     }).then((response) => {
       if (response.status === 200) {
-        setStoreData(response.data.store);
-        console.log("Store Data:", storeData);
+        setStoreData(response.data.store); // Always use the fresh response
         setIsLoading(false);
       }
     }).catch((error) => {
       localStorage.removeItem('token');
-      console.log(error);
       navigate('/storelogin');
     })
-  }
-    , [token])
+  }, [token, setStoreData, navigate]);
 
   if (isloading) {
     return <div>Loading...</div>
   }
-  else {
-    return (
-      <>
-        {children}
-      </>
-    )
-  }
+  return <>{children}</>
 }
 
 export default StoreProtectedWrapper

@@ -4,8 +4,8 @@ const AddService = ({ onClose, onSubmit }) => {
   const [form, setForm] = useState({
     serviceName: '',
     serviceDescription: '',
-    servicePrice: '',
-    serviceDuration: ''
+    price: '',
+    duration: ''
   });
 
   const handleChange = e => {
@@ -17,8 +17,8 @@ const AddService = ({ onClose, onSubmit }) => {
     onSubmit(e, {
       name: form.serviceName,
       description: form.serviceDescription,
-      price: form.servicePrice,
-      duration: form.serviceDuration
+      price: Number(form.price),
+      duration: Number(form.duration)
     });
   };
 
@@ -52,28 +52,31 @@ const AddService = ({ onClose, onSubmit }) => {
           ></textarea>
         </div>
         <div>
-          <label className="block text-gray-700 mb-2" htmlFor="servicePrice">Price</label>
+          <label className="block text-gray-700 mb-2" htmlFor="price">Price (₹)</label>
           <input
             type="number"
-            id="servicePrice"
-            name="servicePrice"
+            id="price"
+            name="price"
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Enter service price"
-            value={form.servicePrice}
+            placeholder="Enter price"
+            value={form.price}
             onChange={handleChange}
+            min="0"
             required
           />
         </div>
         <div>
-          <label className="block text-gray-700 mb-2" htmlFor="serviceDuration">Duration (in minutes)</label>
+          <label className="block text-gray-700 mb-2" htmlFor="duration">Duration (minutes)</label>
           <input
             type="number"
-            id="serviceDuration"
-            name="serviceDuration"
+            id="duration"
+            name="duration"
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Enter service duration"
-            value={form.serviceDuration}
+            placeholder="Enter duration"
+            value={form.duration}
             onChange={handleChange}
+            min="1"
+            required
           />
         </div>
         <div className="flex gap-2">

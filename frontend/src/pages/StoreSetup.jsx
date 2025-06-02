@@ -58,6 +58,8 @@ const StoreSetup = () => {
       .then((response) => {
         if (response.status === 200) {
           setStoreData(response.data);
+          console.log('Store updated successfully:', response.data);
+          console.log('storeServices:', selectedServices);
           navigate('/store/dashboard');
         }
       })

@@ -2,6 +2,7 @@ import express from "express";
 import { body} from "express-validator";
 import {createStoreReview, getAllStores, getStore, getStoreAverageRating, getStorebyServices, getStoreProfile, getStoreReviews, includedServices, loginStore, logoutStore, registerStore, updateStore} from "../controllers/store.controller.js";
 import { authStore, authUser } from "../middlewares/auth.middleware.js";
+import { addStoreService } from "../controllers/storeService.controller.js";
 
 const router = express.Router();
 
@@ -33,11 +34,12 @@ router.get('/getstoreprofile', authStore,getStoreProfile);
 router.get('/get-store/:storeId', getStore);
 router.get('/getallstores', getAllStores);
 router.get('/getstorebyservice', getStorebyServices);
-router.put('/update-store', authStore,updateStore)
+router.put('/update-store', authStore,updateStore);
 router.get('/:storeId/reviews',getStoreReviews);
 router.post('/:storeId/:serviceId/reviews', authUser, [
     body('reviewText').not().isEmpty().withMessage('Review is required'),
     body('rating').isInt({ min: 1, max: 5 }).withMessage('Rating must be between 1 and 5'),
 ],createStoreReview);
 router.get('/average-rating/:storeId', getStoreAverageRating);
+router.post('/add-store-service', authStore, addStoreService);
 export default router;

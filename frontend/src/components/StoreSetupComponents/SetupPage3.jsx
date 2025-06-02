@@ -24,7 +24,7 @@ const SetupPage3 = ({
         setServices(response.data);
       }
     } catch (error) {
-      console.log(error);
+      // handle error if needed
     }
   };
 
@@ -40,8 +40,12 @@ const SetupPage3 = ({
   const handleAddServiceSubmit = async (e, formData) => {
     e.preventDefault();
     try {
+      // 1. Add the service globally
       const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/services/add-service`, formData);
-      if (response.status === 201) {
+      if (response.status === 201 && response.data && response.data._id) {
+        const newServiceId = response.data._id;
+
+        setSelectedServices(prev => [...prev, newServiceId]);
         setShowAddService(false);
         fetchServices();
       } else {
@@ -52,10 +56,42 @@ const SetupPage3 = ({
     }
   };
 
+  // When user clicks Finish, add all selected services to StoreService
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('Store authentication failed. Please log in again.');
+      return;
+    }
+    const price = 0;
+    const duration = 30;
+    try {
+      for (const serviceId of selectedServices) {
+        await axios.post(
+          `${import.meta.env.VITE_BASE_URL}/stores/add-store-service`,
+          {
+            service: serviceId,
+            price,
+            duration
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          }
+        );
+      }
+      handleFinalSubmit(e);
+    } catch (err) {
+      alert('Failed to add one or more services to the store.');
+    }
+  };
+
   return (
     <form
       className="max-w-2xl mx-auto bg-white shadow-2xl rounded-2xl p-10 flex flex-col gap-10"
-      onSubmit={handleFinalSubmit}
+      onSubmit={handleSubmit}
     >
       <h2 className="text-3xl font-extrabold text-blue-900 mb-2 text-center tracking-tight">Select Services</h2>
       <div>

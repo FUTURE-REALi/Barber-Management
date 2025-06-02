@@ -5,6 +5,10 @@ import Service from "../models/services.model.js";
 import { createService } from "../services/services.service.js";
 import { createRating } from "../services/ratings.service.js";
 import Rating from "../models/ratings.model.js";
+import { createStoreService } from "../services/createStoreService.service.js";
+import StoreService from "../models/storeService.model.js";
+import { createStoreService } from "../services/storeService.service.js";
+import { addStoreService, getStoreServices} from "./storeService.controller.js";
 
 export const registerStore = async (req, res, next) => {
 
@@ -90,18 +94,26 @@ export const includedServices = async (req,res,next) => {
         console.log(listOfServices);
 
         for(let i=0; i<listOfServices.length; i++){
-            let service = await Service.findOne({name: listOfServices[i].name, description: listOfServices[i].description, price: listOfServices[i].price, duration: listOfServices[i].duration});
+            
+            let service = await Service.findOne({name: listOfServices[i].name});
 
             if(!service){
-                service = await createService(listOfServices[i].name, listOfServices[i].description, listOfServices[i].price, listOfServices[i].duration);
+                service = await createService(listOfServices[i].name, listOfServices[i].description);
             }
 
-            await store.addService(service._id);
+            let storeService = await storeService.findOne({name: listOfServices[i].name, store: store._id, service: service._id});
 
+            if(!storeService){
+                storeService = await createStoreService(store._id, service._id, listOfServices[i].price, listOfServices[i].duration);
+            }
+            
+            await store.addService(storeService._id);
+
+            storeService.addStore(store._id);
             service.addStore(store._id);
         }
-        res.status(200).json({message: "Services added successfully", services: store.services});
-        console.log(store.services);
+        res.status(200).json({message: "Services added successfully", services: store.storeService});
+        console.log(store.storeService);
     }
     catch(error){
         return res.status(500).json({error: error.message});
@@ -181,7 +193,7 @@ export const getStorebyServices = async (req, res, next) => {
         if (!service) {
             return res.status(400).json({ error: "Service ID is required" });
         }
-        const serviceId = await Service.findOne({ name: { $regex: `^${service}$`, $options: 'i' } });
+        const serviceId = await StoreService.findOne({ service: { $regex: `^${service}$`, $options: 'i' } });
         if (!serviceId) {
             return res.status(404).json({ error: "Service not found" });
         }

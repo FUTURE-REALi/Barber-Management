@@ -35,7 +35,7 @@ const storeSchema = new Schema({
     },
     services: [{
         type: Schema.Types.ObjectId,
-        ref: 'Service',
+        ref: 'StoreService',
     }],
     openingTime: {
         type: String,

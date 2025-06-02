@@ -25,5 +25,12 @@ const storeServiceSchema = new Schema({
     },
 });
 
+storeServiceSchema.methods.addStore = async function (storeId) {
+    if (!storeId) {
+        throw new Error("Store ID is required");
+    }
+    this.store = storeId;
+    return await this.save();
+}
 const StoreService = mongoose.model("StoreService", storeServiceSchema);
 export default StoreService;

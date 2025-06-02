@@ -2,19 +2,19 @@ import Service from "../models/services.model.js";
 import { createService } from "../services/services.service.js";
 
 export const insertService = async (req, res, next) => {
-    const {name, description, price, duration} = req.body;
-    if(!name || !description || !price || !duration) {
+    const {name, description} = req.body;
+    if(!name || !description) {
         return res.status(400).json({error: "All fields are required"});
     }
     
-    const isAlreadyService = await Service.findOne({name:name,description:description,price:price,duration:duration});
+    const isAlreadyService = await Service.findOne({name:name});
 
     if(isAlreadyService) {
         return res.status(400).json({error: "Service already exists"});
     }
 
     try {
-        const service = await createService(name,description,price,duration);
+        const service = await createService(name,description);
         console.log(service);
         res.status(201).json(service);
     }

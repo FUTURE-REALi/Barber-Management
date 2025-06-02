@@ -1,125 +1,79 @@
 import React, { useRef, useState, useEffect } from 'react';
+import axios from 'axios';
 
-// Dummy data for categories and items
-const categories = [
-  {
-    name: 'Newly Added',
-    items: [
-      { name: 'Aloo Do Pyaza', price: 295 },
-      { name: 'Potato Wadges', price: 159 },
-      { name: 'Classic Combo', price: 419, desc: 'PCM India Classic Pizza + Stuffed GB + Small Pepsi' },
-      { name: 'Do Pyaza Combo', price: 399 },
-    ],
-  },
-  {
-    name: 'Haircuts',
-    items: [
-      { name: 'Margherita', price: 199 },
-      { name: 'Farmhouse', price: 249 },
-    ],
-  },
-  {
-    name: 'Beard Trims',
-    items: [
-      { name: 'Combo 1', price: 299 },
-      { name: 'Combo 2', price: 349 },
-    ],
-  },
-  {
-    name: 'Hair Color',
-    items: [
-      { name: 'Hair Color 1', price: 499 },
-      { name: 'Hair Color 2', price: 599 },
-    ],
-  },
-  {
-    name: 'Hair Spa',
-    items: [
-      { name: 'Spa Treatment', price: 699 },
-      { name: 'Deep Conditioning', price: 799 },
-    ],
-  },
-  {
-    name: 'Hair Treatments',
-    items: [
-      { name: 'Keratin Treatment', price: 1299 },
-      { name: 'Smoothening', price: 1499 },
-    ],
-  },
-  {
-    name: 'Hair Styling',
-    items: [
-      { name: 'Blow Dry', price: 399 },
-      { name: 'Hair Straightening', price: 899 },
-    ],
-  },
-  {
-    name: 'Hair Wash',
-    items: [
-      { name: 'Basic Wash', price: 99 },
-      { name: 'Luxury Wash', price: 199 },
-    ],
-  },
-  {
-    name: 'Manicure & Pedicure',
-    items: [
-      { name: 'Basic Manicure', price: 299 },
-      { name: 'Deluxe Pedicure', price: 399 },
-    ],
-  },
-  {
-    name: 'Facials',
-    items: [
-      { name: 'Gold Facial', price: 799 },
-      { name: 'Fruit Facial', price: 599 },
-    ],
-  },
-  {
-    name: 'Waxing',
-    items: [
-      { name: 'Full Body Wax', price: 999 },
-      { name: 'Half Body Wax', price: 599 },
-    ],
-  },
-  {
-    name: 'Threading',
-    items: [
-      { name: 'Eyebrow Threading', price: 99 },
-      { name: 'Upper Lip Threading', price: 79 },
-    ],
-  },
-  {
-    name: 'Makeup',
-    items: [
-      { name: 'Party Makeup', price: 1499 },
-      { name: 'Bridal Makeup', price: 4999 },
-    ],
-  },
-  {
-    name: 'Massage',
-    items: [
-      { name: 'Swedish Massage', price: 899 },
-      { name: 'Deep Tissue Massage', price: 1199 },
-    ],
-  },
-
-];
-
-const BookOnline = () => {
-  const [selectedCategory, setSelectedCategory] = useState(categories[0].name);
+const BookOnline = ({ storeId }) => {
+  const [storeServices, setStoreServices] = useState([]);
   const [search, setSearch] = useState('');
+  const [reviews, setReviews] = useState({});
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState('');
   const rightRef = useRef(null);
+  const sectionRefs = useRef([]);
+
+  // Fetch store services from backend
+  useEffect(() => {
+    const fetchStoreServices = async () => {
+      try {
+        const res = await axios.get(
+          `${import.meta.env.VITE_BASE_URL}/store-services/get-store-services/${storeId}`
+        );
+        if (res.data && Array.isArray(res.data)) {
+          setStoreServices(res.data);
+
+          // Group by category if available, else group all as "All Services"
+          const grouped = {};
+          res.data.forEach(ss => {
+            const cat = ss.service?.category || 'All Services';
+            if (!grouped[cat]) grouped[cat] = [];
+            grouped[cat].push(ss);
+          });
+          const cats = Object.keys(grouped).map(cat => ({
+            name: cat,
+            items: grouped[cat]
+          }));
+          setCategories(cats);
+          setSelectedCategory(cats[0]?.name || '');
+        }
+      } catch (err) {
+        setStoreServices([]);
+        setCategories([]);
+      }
+    };
+    if (storeId) fetchStoreServices();
+  }, [storeId]);
+
+  // Fetch reviews for each service
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        const res = await axios.get(
+          `${import.meta.env.VITE_BASE_URL}/stores/${storeId}/reviews`
+        );
+        if (res.data && Array.isArray(res.data.ratings)) {
+          // Group reviews by storeServiceId
+          const reviewsObj = {};
+          res.data.ratings.forEach(r => {
+            if (r.service) {
+              if (!reviewsObj[r.service]) reviewsObj[r.service] = [];
+              reviewsObj[r.service].push(r);
+            }
+          });
+          setReviews(reviewsObj);
+        }
+      } catch (err) {
+        setReviews({});
+      }
+    };
+    if (storeId) fetchReviews();
+  }, [storeId, storeServices]);
 
   // Filtered items for each category (for search)
   const filteredCategories = categories.map(cat => ({
     ...cat,
-    items: cat.items.filter(item =>
-      item.name.toLowerCase().includes(search.toLowerCase())
+    items: cat.items.filter(ss =>
+      ss.service?.name?.toLowerCase().includes(search.toLowerCase())
     ),
   }));
-
-  // For scroll sync: refs for each category section
-  const sectionRefs = useRef([]);
 
   // When a category is clicked, scroll to its section
   const handleCategoryClick = idx => {
@@ -143,7 +97,7 @@ const BookOnline = () => {
         }
       }
     }
-    if (filteredCategories[foundIdx].name !== selectedCategory) {
+    if (filteredCategories[foundIdx] && filteredCategories[foundIdx].name !== selectedCategory) {
       setSelectedCategory(filteredCategories[foundIdx].name);
     }
   };
@@ -237,14 +191,30 @@ const BookOnline = () => {
               {cat.items.length === 0 ? (
                 <span className="text-gray-400">No items found.</span>
               ) : (
-                cat.items.map((item, i) => (
-                  <div key={item.name + i} className="flex flex-col gap-1 border-b pb-4">
+                cat.items.map((ss, i) => (
+                  <div key={ss._id} className="flex flex-col gap-1 border-b pb-4">
                     <div className="flex items-center gap-2">
                       <span className="border border-green-500 text-green-600 rounded w-5 h-5 flex items-center justify-center text-xs font-bold">🟩</span>
-                      <span className="text-lg font-semibold">{item.name}</span>
+                      <span className="text-lg font-semibold">{ss.service?.name}</span>
                     </div>
-                    <span className="text-gray-700 font-medium">₹{item.price}</span>
-                    {item.desc && <span className="text-gray-500 text-sm">{item.desc}</span>}
+                    <span className="text-gray-700 font-medium">₹{ss.price}</span>
+                    <span className="text-gray-500 text-sm">{ss.service?.description}</span>
+                    <span className="text-gray-500 text-sm">Duration: {ss.duration} min</span>
+                    {/* Reviews */}
+                    <div className="mt-2">
+                      <span className="font-semibold text-gray-700">Reviews:</span>
+                      {reviews[ss.service?._id] && reviews[ss.service?._id].length > 0 ? (
+                        <ul className="ml-4 mt-1">
+                          {reviews[ss.service._id].map((review, i) => (
+                            <li key={review._id || i} className="text-gray-600 text-sm mb-1">
+                              <span className="font-semibold">{review.user?.name || 'User'}:</span> {review.reviewText} <span className="text-yellow-600">({review.rating}★)</span>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <span className="text-gray-400 ml-2">No reviews yet.</span>
+                      )}
+                    </div>
                   </div>
                 ))
               )}

@@ -14,6 +14,7 @@ import UserProtectedWrapper from './components/UserProtectedWrapper.jsx'
 import UserProfile from './pages/UserProfile.jsx'
 import StoreDetailPage from './pages/StoreDetailPage.jsx'
 import Footer from './components/Footer.jsx'
+import OrderCart from './pages/OrderCart.jsx'
 
 const App = () => {
   const location = useLocation();
@@ -85,6 +86,11 @@ const App = () => {
             <StoreProtectedWrapper>
               <StoreHomePage />
             </StoreProtectedWrapper>
+          }></Route>
+          <Route path= "/checkoutcart" element = {
+            <UserProtectedWrapper>
+              <OrderCart />
+            </UserProtectedWrapper>
           }></Route>
         </Routes>
       </div>

@@ -80,7 +80,7 @@ const Reviews = ({ storeId, services }) => {
               value={ratingInput}
               onChange={e => setRatingInput(Number(e.target.value))}
             >
-              {[5,4,3,2,1].map(num => (
+              {[5, 4, 3, 2, 1].map(num => (
                 <option key={num} value={num}>{num}★</option>
               ))}
             </select>
@@ -89,9 +89,9 @@ const Reviews = ({ storeId, services }) => {
               value={serviceId}
               onChange={e => setServiceId(e.target.value)}
             >
-              {services.map(service => (
-                <option key={service._id} value={service._id}>
-                  {service.name}
+              {services.map(storeService => (
+                <option key={storeService._id} value={storeService._id}>
+                  {storeService.service?.name}
                 </option>
               ))}
             </select>

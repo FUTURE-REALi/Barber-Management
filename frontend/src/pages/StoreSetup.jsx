@@ -60,7 +60,7 @@ const StoreSetup = () => {
           setStoreData(response.data);
           console.log('Store updated successfully:', response.data);
           console.log('storeServices:', selectedServices);
-          navigate('/store/dashboard');
+          navigate('/storehomepage');
         }
       })
       .catch((error) => {

@@ -32,17 +32,16 @@ export const addStoreService = async (req, res) => {
 };
 
 export const getStoreServices = async (req, res) => {
-    const {store} = req.params;
-    if(!store) {
-        return res.status(400).json({message: 'Store ID is required'});
-    }
-    try {
-        const services = await StoreService.find({store})
-            .populate('service', 'name description')
-            .select('price duration service');
-        return res.status(200).json(services);
-    }
-    catch (error) {
-        return res.status(500).json({message: error.message});
-    }
+  const {storeId} = req.params;
+  if(!storeId) {
+    return res.status(400).json({message: 'Store ID is required'});
+  }
+  try {
+    const services = await StoreService.find({store: storeId})
+      .populate('service', 'name description')
+      .select('price duration service');
+    return res.status(200).json(services);
+  } catch (error) {
+    return res.status(500).json({message: error.message});
+  }
 }

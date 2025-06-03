@@ -67,6 +67,10 @@ const storeSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'Rating',
     },
+    bookings: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Booking',
+    }],
 });
 
 storeSchema.pre("save", async function(next){

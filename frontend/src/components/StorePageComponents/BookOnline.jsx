@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import axios from 'axios';
+import CartAnimation from '../CartAnimation';
 
 const BookOnline = ({ storeId }) => {
   const [storeServices, setStoreServices] = useState([]);
@@ -7,6 +8,8 @@ const BookOnline = ({ storeId }) => {
   const [reviews, setReviews] = useState({});
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('');
+  const [cart, setCart] = useState([]);
+  const [showAnim, setShowAnim] = useState(false);
   const rightRef = useRef(null);
   const sectionRefs = useRef([]);
 
@@ -115,6 +118,48 @@ const BookOnline = ({ storeId }) => {
     // eslint-disable-next-line
   }, [selectedCategory]);
 
+  // Add to cart logic
+  const triggerAnim = () => {
+    setShowAnim(false);
+    setTimeout(() => setShowAnim(true), 10);
+  };
+
+  const handleAddToCart = (ss) => {
+    setCart(prev => {
+      const exists = prev.find(item => item._id === ss._id);
+      if (exists) {
+        return prev.map(item =>
+          item._id === ss._id ? { ...item, qty: item.qty + 1 } : item
+        );
+      }
+      return [...prev, { ...ss, qty: 1 }];
+    });
+    triggerAnim();
+  };
+
+  const handleQtyChange = (ss, delta) => {
+    setCart(prev => {
+      const exists = prev.find(item => item._id === ss._id);
+      if (!exists && delta > 0) {
+        return [...prev, { ...ss, qty: 1 }];
+      }
+      // Remove item if qty would go to 0
+      return prev
+        .map(item =>
+          item._id === ss._id
+            ? { ...item, qty: Math.max(0, item.qty + delta) }
+            : item
+        )
+        .filter(item => item.qty > 0);
+    });
+    triggerAnim();
+  };
+
+  const getCartQty = (ss) => {
+    const found = cart.find(item => item._id === ss._id);
+    return found ? found.qty : 0;
+  };
+
   return (
     <div className="flex w-full h-[70vh] bg-white rounded shadow overflow-hidden">
       {/* Left: Categories */}
@@ -191,32 +236,56 @@ const BookOnline = ({ storeId }) => {
               {cat.items.length === 0 ? (
                 <span className="text-gray-400">No items found.</span>
               ) : (
-                cat.items.map((ss, i) => (
-                  <div key={ss._id} className="flex flex-col gap-1 border-b pb-4">
-                    <div className="flex items-center gap-2">
-                      <span className="border border-green-500 text-green-600 rounded w-5 h-5 flex items-center justify-center text-xs font-bold">🟩</span>
-                      <span className="text-lg font-semibold">{ss.service?.name}</span>
-                    </div>
-                    <span className="text-gray-700 font-medium">₹{ss.price}</span>
-                    <span className="text-gray-500 text-sm">{ss.service?.description}</span>
-                    <span className="text-gray-500 text-sm">Duration: {ss.duration} min</span>
-                    {/* Reviews */}
-                    <div className="mt-2">
-                      <span className="font-semibold text-gray-700">Reviews:</span>
-                      {reviews[ss.service?._id] && reviews[ss.service?._id].length > 0 ? (
-                        <ul className="ml-4 mt-1">
-                          {reviews[ss.service._id].map((review, i) => (
-                            <li key={review._id || i} className="text-gray-600 text-sm mb-1">
-                              <span className="font-semibold">{review.user?.name || 'User'}:</span> {review.reviewText} <span className="text-yellow-600">({review.rating}★)</span>
-                            </li>
-                          ))}
-                        </ul>
+                cat.items.map((ss, i) => {
+                  const qty = getCartQty(ss);
+                  return (
+                    <div key={ss._id} className="flex flex-col gap-1 border-b pb-4">
+                      <div className="flex items-center gap-2">
+                        <span className="border border-green-500 text-green-600 rounded w-5 h-5 flex items-center justify-center text-xs font-bold">🟩</span>
+                        <span className="text-lg font-semibold">{ss.service?.name}</span>
+                      </div>
+                      <span className="text-gray-700 font-medium">₹{ss.price}</span>
+                      <span className="text-gray-500 text-sm">{ss.service?.description}</span>
+                      <span className="text-gray-500 text-sm">Duration: {ss.duration} min</span>
+                      {/* Add to Cart or Quantity Controls */}
+                      {qty === 0 ? (
+                        <button
+                          className="mt-2 w-max bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded transition"
+                          onClick={() => handleAddToCart(ss)}
+                        >
+                          Add to Cart
+                        </button>
                       ) : (
-                        <span className="text-gray-400 ml-2">No reviews yet.</span>
+                        <div className="flex items-center gap-2 mt-2">
+                          <button
+                            className="bg-gray-200 px-3 py-1 rounded text-lg font-bold"
+                            onClick={() => handleQtyChange(ss, -1)}
+                          >-</button>
+                          <span className="font-semibold">{qty}</span>
+                          <button
+                            className="bg-gray-200 px-3 py-1 rounded text-lg font-bold"
+                            onClick={() => handleQtyChange(ss, 1)}
+                          >+</button>
+                        </div>
                       )}
+                      {/* Reviews */}
+                      <div className="mt-2">
+                        <span className="font-semibold text-gray-700">Reviews:</span>
+                        {reviews[ss.service?._id] && reviews[ss.service?._id].length > 0 ? (
+                          <ul className="ml-4 mt-1">
+                            {reviews[ss.service._id].map((review, i) => (
+                              <li key={review._id || i} className="text-gray-600 text-sm mb-1">
+                                <span className="font-semibold">{review.user?.name || 'User'}:</span> {review.reviewText} <span className="text-yellow-600">({review.rating}★)</span>
+                              </li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <span className="text-gray-400 ml-2">No reviews yet.</span>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
           ))}
@@ -227,6 +296,8 @@ const BookOnline = ({ storeId }) => {
           `}
         </style>
       </div>
+      {/* Cart Animation */}
+      <CartAnimation show={showAnim} cartCount={cart.reduce((a, b) => a + b.qty, 0)} />
     </div>
   );
 };

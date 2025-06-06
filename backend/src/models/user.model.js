@@ -47,6 +47,10 @@ const userSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: "Booking"
     }],
+    cart: {
+        type: Schema.Types.ObjectId,
+        ref: "OrderCart"
+    },
 });
 
 userSchema.pre("save", async function(next){

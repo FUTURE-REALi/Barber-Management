@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import CartAnimation from '../components/CartAnimation';
 
 const mockCart = [
   {
@@ -15,6 +16,13 @@ const mockCart = [
 
 const OrderCart = () => {
   const [cart, setCart] = useState(mockCart);
+  const [showAnim, setShowAnim] = useState(false);
+
+  // Helper to always retrigger animation
+  const triggerAnim = () => {
+    setShowAnim(false);
+    setTimeout(() => setShowAnim(true), 10);
+  };
 
   const handleQtyChange = (idx, delta) => {
     setCart(prev =>
@@ -24,10 +32,12 @@ const OrderCart = () => {
           : item
       )
     );
+    triggerAnim();
   };
 
   const handleRemove = idx => {
     setCart(prev => prev.filter((_, i) => i !== idx));
+    triggerAnim();
   };
 
   const merchandise = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
@@ -37,93 +47,96 @@ const OrderCart = () => {
   const total = merchandise + shipping + discount + tax;
 
   return (
-    <div className="flex flex-col md:flex-row justify-center items-start min-h-screen bg-gray-100 py-8 px-2">
-      {/* Cart Items */}
-      <div className="bg-white shadow-md rounded-lg p-6 w-full max-w-2xl mb-8 md:mb-0 md:mr-8">
-        <h1 className="text-2xl font-bold mb-4">Cart: ({cart.length} item{cart.length !== 1 ? 's' : ''})</h1>
-        {cart.length === 0 ? (
-          <p className="text-gray-600 text-center mb-6">Your cart is currently empty.</p>
-        ) : (
-          cart.map((item, idx) => (
-            <div key={item._id} className="flex flex-col md:flex-row items-center border-b py-4">
-              <img src={item.img} alt={item.name} className="w-28 h-28 object-cover rounded mb-4 md:mb-0 md:mr-6" />
-              <div className="flex-1 w-full">
-                <div className="flex justify-between items-center">
-                  <span className="font-semibold text-lg">{item.name}</span>
-                  <button
-                    className="text-gray-400 hover:text-red-500 text-xl"
-                    onClick={() => handleRemove(idx)}
-                    title="Remove"
-                  >
-                    ×
-                  </button>
-                </div>
-                <div className="text-gray-500 text-sm mb-2">{item.desc}</div>
-                <div className="flex items-center gap-2 mb-2">
-                  <button
-                    className="px-2 py-1 border rounded text-lg"
-                    onClick={() => handleQtyChange(idx, -1)}
-                    disabled={item.qty === 1}
-                  >-</button>
-                  <span className="px-2">{item.qty}</span>
-                  <button
-                    className="px-2 py-1 border rounded text-lg"
-                    onClick={() => handleQtyChange(idx, 1)}
-                  >+</button>
-                  <span className="ml-4 font-semibold">${(item.price * item.qty).toFixed(2)}</span>
-                </div>
-                <div className="text-gray-600 text-sm">
-                  <span className="font-semibold">Ship Only</span> · {item.shipping} · {item.shippingTime}
+    <>
+      <div className="flex flex-col md:flex-row justify-center items-start min-h-screen bg-gray-100 py-8 px-2">
+        {/* Cart Items */}
+        <div className="bg-white shadow-md rounded-lg p-6 w-full max-w-2xl mb-8 md:mb-0 md:mr-8">
+          <h1 className="text-2xl font-bold mb-4">Cart: ({cart.length} item{cart.length !== 1 ? 's' : ''})</h1>
+          {cart.length === 0 ? (
+            <p className="text-gray-600 text-center mb-6">Your cart is currently empty.</p>
+          ) : (
+            cart.map((item, idx) => (
+              <div key={item._id} className="flex flex-col md:flex-row items-center border-b py-4">
+                <img src={item.img} alt={item.name} className="w-28 h-28 object-cover rounded mb-4 md:mb-0 md:mr-6" />
+                <div className="flex-1 w-full">
+                  <div className="flex justify-between items-center">
+                    <span className="font-semibold text-lg">{item.name}</span>
+                    <button
+                      className="text-gray-400 hover:text-red-500 text-xl"
+                      onClick={() => handleRemove(idx)}
+                      title="Remove"
+                    >
+                      ×
+                    </button>
+                  </div>
+                  <div className="text-gray-500 text-sm mb-2">{item.desc}</div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <button
+                      className="px-2 py-1 border rounded text-lg"
+                      onClick={() => handleQtyChange(idx, -1)}
+                      disabled={item.qty === 1}
+                    >-</button>
+                    <span className="px-2">{item.qty}</span>
+                    <button
+                      className="px-2 py-1 border rounded text-lg"
+                      onClick={() => handleQtyChange(idx, 1)}
+                    >+</button>
+                    <span className="ml-4 font-semibold">${(item.price * item.qty).toFixed(2)}</span>
+                  </div>
+                  <div className="text-gray-600 text-sm">
+                    <span className="font-semibold">Ship Only</span> · {item.shipping} · {item.shippingTime}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))
-        )}
+            ))
+          )}
+        </div>
+        {/* Cart Summary */}
+        <div className="bg-white shadow-md rounded-lg p-6 w-full max-w-sm">
+          <h2 className="text-xl font-bold mb-4">Cart Summary</h2>
+          <div className="flex justify-between mb-2">
+            <span>Merchandise:</span>
+            <span>${merchandise.toFixed(2)}</span>
+          </div>
+          <div className="flex justify-between mb-2">
+            <span>Est. Shipping & Handling:</span>
+            <span>${shipping.toFixed(2)}</span>
+          </div>
+          <div className="flex justify-between mb-2">
+            <span>Shipping Discount:</span>
+            <span className="text-green-600">${discount.toFixed(2)}</span>
+          </div>
+          <div className="flex justify-between mb-2">
+            <span>Est. Tax:</span>
+            <span>${tax.toFixed(2)}</span>
+          </div>
+          <div className="border-t my-2"></div>
+          <div className="flex justify-between font-bold text-lg mb-4">
+            <span>Est. Order Total:</span>
+            <span>${total.toFixed(2)}</span>
+          </div>
+          <div className="mb-4">
+            <input
+              type="text"
+              placeholder="Apply a Promotion Code"
+              className="border px-2 py-1 rounded w-2/3 mr-2"
+            />
+            <button className="bg-gray-200 px-3 py-1 rounded hover:bg-gray-300">APPLY</button>
+          </div>
+          <button className="w-full bg-black text-white py-2 rounded font-semibold mb-2 hover:bg-gray-900">
+            CHECKOUT NOW
+          </button>
+          <button className="w-full bg-yellow-400 text-black py-2 rounded font-semibold hover:bg-yellow-500 flex items-center justify-center gap-2">
+            <img src="https://www.paypalobjects.com/webstatic/icon/pp258.png" alt="PayPal" className="w-6 h-6" />
+            PayPal
+          </button>
+          <div className="text-xs text-gray-500 mt-2 text-center">
+            By continuing to Checkout, you are agreeing to our Terms of Use and Privacy Policy.
+          </div>
+        </div>
       </div>
-      {/* Cart Summary */}
-      <div className="bg-white shadow-md rounded-lg p-6 w-full max-w-sm">
-        <h2 className="text-xl font-bold mb-4">Cart Summary</h2>
-        <div className="flex justify-between mb-2">
-          <span>Merchandise:</span>
-          <span>${merchandise.toFixed(2)}</span>
-        </div>
-        <div className="flex justify-between mb-2">
-          <span>Est. Shipping & Handling:</span>
-          <span>${shipping.toFixed(2)}</span>
-        </div>
-        <div className="flex justify-between mb-2">
-          <span>Shipping Discount:</span>
-          <span className="text-green-600">${discount.toFixed(2)}</span>
-        </div>
-        <div className="flex justify-between mb-2">
-          <span>Est. Tax:</span>
-          <span>${tax.toFixed(2)}</span>
-        </div>
-        <div className="border-t my-2"></div>
-        <div className="flex justify-between font-bold text-lg mb-4">
-          <span>Est. Order Total:</span>
-          <span>${total.toFixed(2)}</span>
-        </div>
-        <div className="mb-4">
-          <input
-            type="text"
-            placeholder="Apply a Promotion Code"
-            className="border px-2 py-1 rounded w-2/3 mr-2"
-          />
-          <button className="bg-gray-200 px-3 py-1 rounded hover:bg-gray-300">APPLY</button>
-        </div>
-        <button className="w-full bg-black text-white py-2 rounded font-semibold mb-2 hover:bg-gray-900">
-          CHECKOUT NOW
-        </button>
-        <button className="w-full bg-yellow-400 text-black py-2 rounded font-semibold hover:bg-yellow-500 flex items-center justify-center gap-2">
-          <img src="https://www.paypalobjects.com/webstatic/icon/pp258.png" alt="PayPal" className="w-6 h-6" />
-          PayPal
-        </button>
-        <div className="text-xs text-gray-500 mt-2 text-center">
-          By continuing to Checkout, you are agreeing to our Terms of Use and Privacy Policy.
-        </div>
-      </div>
-    </div>
+      <CartAnimation show={showAnim} cartCount={cart.length} />
+    </>
   );
 };
 

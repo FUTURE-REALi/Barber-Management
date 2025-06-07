@@ -1,6 +1,6 @@
 import express from 'express';
-import { createOrderCart, deleteOrderCart, getOrderCart, updateOrderCart } from '../controllers/orderCart.controller';
-import { authUser } from '../middlewares/auth.middleware';
+import { createOrderCart, deleteOrderCart, getOrderCart, updateOrderCart } from '../controllers/orderCart.controller.js';
+import { authUser } from '../middlewares/auth.middleware.js';
 const router = express.Router();
 
 router.post('/create',authUser,createOrderCart);

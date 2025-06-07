@@ -33,3 +33,4 @@ const orderCartSchema = new Schema({
 });
 
 const OrderCart = mongoose.model("OrderCart", orderCartSchema);
+export default OrderCart;

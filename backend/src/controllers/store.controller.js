@@ -30,7 +30,12 @@ export const registerStore = async (req, res, next) => {
         const closingTime ="21:00";
         const newstore = await createStore(storename, ownername, password, email, address, phone, openingTime, closingTime);
         const token = newstore.generateToken();
-        res.cookie('token', token);
+        res.cookie('token', token, {
+            httpOnly: true,
+            secure: false,
+            sameSite: 'lax',
+            path: '/',
+        });
         res.status(201).json({token,newstore});
         console.log(newstore);
         console.log(newstore._id);
@@ -54,7 +59,12 @@ export const loginStore = async (req, res, next) => {
             return res.status(400).json({error: "Invalid Credentials"});
         }
         const token = store.generateToken();
-        res.cookie('token', token);
+        res.cookie('token', token, {
+            httpOnly: true,
+            secure: false,
+            sameSite: 'lax',
+            path: '/',
+        });
         res.status(200).json({token,store});
     } 
     catch (error) {

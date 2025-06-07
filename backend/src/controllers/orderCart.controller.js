@@ -3,7 +3,7 @@ import OrderCart from '../models/orderCart.model.js';
 export const createOrderCart = async (req, res) => {
     const { user, store, items, totalPrice } = req.body;
 
-    if (!user || !store || !items || !totalPrice) {
+    if (!user || !store || !items || totalPrice === undefined) {
         return res.status(400).json({ message: "Please fill in all fields" });
     }
 
@@ -17,6 +17,7 @@ export const createOrderCart = async (req, res) => {
 
         await newOrderCart.save();
         res.status(201).json(newOrderCart);
+        console.log("Order Cart created successfully");
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -60,14 +61,19 @@ export const getOrderCart = async (req, res) => {
 
 export const updateOrderCart = async (req, res) => {
     const { id } = req.params;
-    const { items, totalPrice } = req.body;
+    let { items, totalPrice } = req.body;
 
-    if (!id || !items || !totalPrice) {
+    if (!id || !items || totalPrice === undefined) {
         return res.status(400).json({ message: "Please fill in all fields" });
     }
+    items = items.filter(item => item.quantity > 0);
 
     try {
-        const updatedOrderCart = await OrderCart.findByIdAndUpdate(id, { items, totalPrice }, { new: true });
+        const updatedOrderCart = await OrderCart.findByIdAndUpdate(
+            id,
+            { items, totalPrice },
+            { new: true }
+        );
         if (!updatedOrderCart) {
             return res.status(404).json({ message: "Order Cart not found" });
         }
@@ -75,4 +81,4 @@ export const updateOrderCart = async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
-}
+};

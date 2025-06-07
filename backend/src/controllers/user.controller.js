@@ -22,7 +22,12 @@ export const registerUser = async (req, res, next) => {
     try {
         const newUser = await createUser(fullname, username, email, password);
         const token = newUser.generateToken();
-        res.cookie('token', token);
+        res.cookie('token', token, {
+            httpOnly: true,
+            secure: false,
+            sameSite: 'lax',
+            path: '/',
+        });
         res.status(201).json({ token, newUser });
     }
     catch (error) {
@@ -49,7 +54,12 @@ export const loginUser = async (req, res, next) => {
         }
 
         const token = user.generateToken();
-        res.cookie('token', token);
+        res.cookie('token', token, {
+            httpOnly: true,
+            secure: false,
+            sameSite: 'lax',
+            path: '/',
+        });
         res.status(200).json({token, user});
     }
     catch(error){

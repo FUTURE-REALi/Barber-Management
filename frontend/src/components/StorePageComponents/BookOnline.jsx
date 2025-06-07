@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import axios from 'axios';
 import CartAnimation from '../CartAnimation';
+import AddToCart from './AddToCart';
 
 const BookOnline = ({ storeId }) => {
   const [storeServices, setStoreServices] = useState([]);
@@ -247,27 +248,14 @@ const BookOnline = ({ storeId }) => {
                       <span className="text-gray-700 font-medium">₹{ss.price}</span>
                       <span className="text-gray-500 text-sm">{ss.service?.description}</span>
                       <span className="text-gray-500 text-sm">Duration: {ss.duration} min</span>
-                      {/* Add to Cart or Quantity Controls */}
-                      {qty === 0 ? (
-                        <button
-                          className="mt-2 w-max bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded transition"
-                          onClick={() => handleAddToCart(ss)}
-                        >
-                          Add to Cart
-                        </button>
-                      ) : (
-                        <div className="flex items-center gap-2 mt-2">
-                          <button
-                            className="bg-gray-200 px-3 py-1 rounded text-lg font-bold"
-                            onClick={() => handleQtyChange(ss, -1)}
-                          >-</button>
-                          <span className="font-semibold">{qty}</span>
-                          <button
-                            className="bg-gray-200 px-3 py-1 rounded text-lg font-bold"
-                            onClick={() => handleQtyChange(ss, 1)}
-                          >+</button>
-                        </div>
-                      )}
+                      {/* Use AddToCart component and pass setCart and storeId */}
+                      <AddToCart
+                        qty={qty}
+                        service={ss}
+                        storeId={storeId}
+                        onCartChange={setCart}
+                        onCartAnim={triggerAnim}
+                      />
                       {/* Reviews */}
                       <div className="mt-2">
                         <span className="font-semibold text-gray-700">Reviews:</span>

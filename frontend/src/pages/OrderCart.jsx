@@ -1,22 +1,42 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
+import axios from 'axios';
 import CartAnimation from '../components/CartAnimation';
-
-const mockCart = [
-  {
-    _id: '1',
-    name: 'Caraway Home Marigold Non-Stick Ceramic Saucepan',
-    price: 125.0,
-    qty: 1,
-    img: 'https://cb.scene7.com/is/image/Crate/CarawaySaucepanMarigoldSHF21/$web_pdp_main_carousel_lg$/211021143024/caraway-saucepan-marigold.jpg',
-    desc: 'SKU 478392',
-    shipping: 'Standard',
-    shippingTime: 'Arrives 9-10 business days after vendor ships item(s)'
-  }
-];
+import { UserDataContext } from '../context/UserContext';
 
 const OrderCart = () => {
-  const [cart, setCart] = useState(mockCart);
+  const { userData } = useContext(UserDataContext);
+  const userId = userData?._id;
+  const token = localStorage.getItem('token');
+  const [cart, setCart] = useState([]);
   const [showAnim, setShowAnim] = useState(false);
+
+  // Fetch cart from backend on mount
+  useEffect(() => {
+    const fetchCart = async () => {
+      if (!userId) return;
+      try {
+        const res = await axios.get(
+          `${import.meta.env.VITE_BASE_URL}/order-cart/${userId}`,
+          {
+            withCredentials: true,
+            headers: { Authorization: `Bearer ${token}` }
+          }
+        );
+        if (res.data && Array.isArray(res.data.items)) {
+          setCart(
+            res.data.items.map(backendItem => ({
+              ...backendItem.service,
+              qty: backendItem.quantity,
+              serviceName: backendItem.service?.name || backendItem.service?.service?.name
+            }))
+          );
+        }
+      } catch (err) {
+        setCart([]);
+      }
+    };
+    fetchCart();
+  }, [userId, token]);
 
   // Helper to always retrigger animation
   const triggerAnim = () => {
@@ -24,19 +44,68 @@ const OrderCart = () => {
     setTimeout(() => setShowAnim(true), 10);
   };
 
+  // Sync cart to backend
+  const syncCartToBackend = async (updatedCart) => {
+    if (!userId) return;
+    const items = updatedCart.map(item => ({
+      service: item._id,
+      quantity: item.qty,
+    }));
+    const totalPrice = updatedCart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+
+    try {
+      // Get cart id
+      const res = await axios.get(
+        `${import.meta.env.VITE_BASE_URL}/order-cart/${userId}`,
+        {
+          withCredentials: true,
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+      if (res.data && res.data._id) {
+        await axios.put(
+          `${import.meta.env.VITE_BASE_URL}/order-cart/update/${res.data._id}`,
+          { items, totalPrice },
+          {
+            withCredentials: true,
+            headers: { Authorization: `Bearer ${token}` }
+          }
+        );
+      }
+    } catch (err) {
+      // If not found, create new cart
+      if (err.response && err.response.status === 404) {
+        await axios.post(
+          `${import.meta.env.VITE_BASE_URL}/order-cart/create`,
+          { user: userId, items, totalPrice },
+          {
+            withCredentials: true,
+            headers: { Authorization: `Bearer ${token}` }
+          }
+        );
+      }
+    }
+  };
+  // Quantity change handler
   const handleQtyChange = (idx, delta) => {
-    setCart(prev =>
-      prev.map((item, i) =>
-        i === idx
-          ? { ...item, qty: Math.max(1, item.qty + delta) }
-          : item
-      )
-    );
+    setCart(prev => {
+      const updated = prev
+        .map((item, i) =>
+          i === idx ? { ...item, qty: Math.max(1, item.qty + delta) } : item
+        );
+      syncCartToBackend(updated);
+      return updated;
+    });
     triggerAnim();
   };
 
+  // Remove handler
   const handleRemove = idx => {
-    setCart(prev => prev.filter((_, i) => i !== idx));
+    setCart(prev => {
+      const updated = prev.filter((_, i) => i !== idx);
+      syncCartToBackend(updated);
+      return updated;
+    });
     triggerAnim();
   };
 
@@ -57,10 +126,18 @@ const OrderCart = () => {
           ) : (
             cart.map((item, idx) => (
               <div key={item._id} className="flex flex-col md:flex-row items-center border-b py-4">
-                <img src={item.img} alt={item.name} className="w-28 h-28 object-cover rounded mb-4 md:mb-0 md:mr-6" />
+                {item.img ? (
+                  <img
+                    src={item.img || 'https://via.placeholder.com/112'}
+                    alt={item.serviceName || item.name}
+                    className="w-28 h-28 object-cover rounded mb-4 md:mb-0 md:mr-6"
+                  />
+                ) : null}
                 <div className="flex-1 w-full">
                   <div className="flex justify-between items-center">
-                    <span className="font-semibold text-lg">{item.name}</span>
+                    <span className="font-semibold text-lg">
+                      {item.serviceName || item.name}
+                    </span>
                     <button
                       className="text-gray-400 hover:text-red-500 text-xl"
                       onClick={() => handleRemove(idx)}
@@ -69,7 +146,7 @@ const OrderCart = () => {
                       ×
                     </button>
                   </div>
-                  <div className="text-gray-500 text-sm mb-2">{item.desc}</div>
+                  <div className="text-gray-500 text-sm mb-2">{item.desc || item.description}</div>
                   <div className="flex items-center gap-2 mb-2">
                     <button
                       className="px-2 py-1 border rounded text-lg"
@@ -84,7 +161,9 @@ const OrderCart = () => {
                     <span className="ml-4 font-semibold">${(item.price * item.qty).toFixed(2)}</span>
                   </div>
                   <div className="text-gray-600 text-sm">
-                    <span className="font-semibold">Ship Only</span> · {item.shipping} · {item.shippingTime}
+                    <span className="font-semibold">Ship Only</span>
+                    {item.shipping && <> · {item.shipping}</>}
+                    {item.shippingTime && <> · {item.shippingTime}</>}
                   </div>
                 </div>
               </div>

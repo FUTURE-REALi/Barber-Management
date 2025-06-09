@@ -29,6 +29,10 @@ const bookingSchema = new Schema({
         type: Date,
         default: Date.now
     },
+    slot: {
+        type: String,
+        required: true
+    },
 });
 
 const Booking = mongoose.model('Booking', bookingSchema);

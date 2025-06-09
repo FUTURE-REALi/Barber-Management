@@ -49,7 +49,10 @@ export const getOrderCart = async (req, res) => {
     }
 
     try {
-        const orderCart = await OrderCart.findOne({ user: userId }).populate('items.service');
+        const orderCart = await OrderCart.findOne({ user: userId }).populate({
+            path: 'items.service',
+            populate: {path: 'service'}
+        });
         if (!orderCart) {
             return res.status(404).json({ message: "Order Cart not found" });
         }

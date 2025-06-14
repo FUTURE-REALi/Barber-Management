@@ -8,7 +8,6 @@ import connectDB from './src/config/db.js';
 connectDB();
 
 const app = express();
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 const allowedOrigin = 'http://localhost:5173';
@@ -30,6 +29,7 @@ import serviceRoute from './src/routes/services.route.js';
 import storeServiceRoute from './src/routes/storeService.route.js';
 import bookingRoute from './src/routes/bookings.route.js';
 import orderCartRoute from './src/routes/orderCart.route.js';
+import paymentRoute from './src/routes/payment.route.js';
 
 app.use('/users', userRoute);
 app.use('/stores', storeRoute);
@@ -37,5 +37,6 @@ app.use('/services', serviceRoute);
 app.use('/store-services',storeServiceRoute);
 app.use('/bookings',bookingRoute);
 app.use('/order-cart', orderCartRoute);
+app.use('/payment',paymentRoute);
 
 export default app;

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import CartAnimation from '../components/CartAnimation';
 import { UserDataContext } from '../context/UserContext';
+import HandleRazorpayPayment from '../components/PaymentComponents/HandleRazorpayPayement';
 
 const OrderCart = () => {
   const { userData } = useContext(UserDataContext);
@@ -31,14 +32,14 @@ const OrderCart = () => {
             }))
           );
         }
-      } catch (err) {
+      } catch {
         setCart([]);
       }
     };
     fetchCart();
   }, [userId, token]);
 
-  // Helper to always retrigger animation
+  // Animation helper
   const triggerAnim = () => {
     setShowAnim(false);
     setTimeout(() => setShowAnim(true), 10);
@@ -54,7 +55,6 @@ const OrderCart = () => {
     const totalPrice = updatedCart.reduce((sum, item) => sum + (item.price * item.qty), 0);
 
     try {
-      // Get cart id
       const res = await axios.get(
         `${import.meta.env.VITE_BASE_URL}/order-cart/${userId}`,
         {
@@ -73,7 +73,6 @@ const OrderCart = () => {
         );
       }
     } catch (err) {
-      // If not found, create new cart
       if (err.response && err.response.status === 404) {
         await axios.post(
           `${import.meta.env.VITE_BASE_URL}/order-cart/create`,
@@ -86,6 +85,7 @@ const OrderCart = () => {
       }
     }
   };
+
   // Quantity change handler
   const handleQtyChange = (idx, delta) => {
     setCart(prev => {
@@ -109,6 +109,7 @@ const OrderCart = () => {
     triggerAnim();
   };
 
+  // Cart summary calculations
   const merchandise = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
   const shipping = cart.length > 0 ? 16.95 : 0;
   const discount = cart.length > 0 ? -16.95 : 0;
@@ -126,13 +127,13 @@ const OrderCart = () => {
           ) : (
             cart.map((item, idx) => (
               <div key={item._id} className="flex flex-col md:flex-row items-center border-b py-4">
-                {item.img ? (
+                {item.img && (
                   <img
                     src={item.img || 'https://via.placeholder.com/112'}
                     alt={item.serviceName || item.name}
                     className="w-28 h-28 object-cover rounded mb-4 md:mb-0 md:mr-6"
                   />
-                ) : null}
+                )}
                 <div className="flex-1 w-full">
                   <div className="flex justify-between items-center">
                     <span className="font-semibold text-lg">
@@ -202,9 +203,8 @@ const OrderCart = () => {
             />
             <button className="bg-gray-200 px-3 py-1 rounded hover:bg-gray-300">APPLY</button>
           </div>
-          <button className="w-full bg-black text-white py-2 rounded font-semibold mb-2 hover:bg-gray-900">
-            CHECKOUT NOW
-          </button>
+          {/* Razorpay Payment Button */}
+          <HandleRazorpayPayment cart={cart} userData={userData} />
           <button className="w-full bg-yellow-400 text-black py-2 rounded font-semibold hover:bg-yellow-500 flex items-center justify-center gap-2">
             <img src="https://www.paypalobjects.com/webstatic/icon/pp258.png" alt="PayPal" className="w-6 h-6" />
             PayPal

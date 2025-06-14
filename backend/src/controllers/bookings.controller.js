@@ -58,7 +58,6 @@ export const updateBooking = async (req, res, next) => {
     }
 }
 
-
 export const deleteBooking = async (req, res, next) => {
     const { id } = req.params;
 

@@ -38,7 +38,7 @@ const StoreLogin = () => {
       localStorage.setItem('token', data.token);
       localStorage.setItem('role', 'store');
       console.log(data);
-      navigate('/storehome');
+      navigate('/storehomepage');
     }
     else{
       alert('Store already exists');

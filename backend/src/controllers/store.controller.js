@@ -8,6 +8,7 @@ import Rating from "../models/ratings.model.js";
 import StoreService from "../models/storeService.model.js";
 import { createStoreService } from "../services/storeService.service.js";
 import { addStoreService, getStoreServices} from "./storeService.controller.js";
+import Booking from "../models/bookings.model.js";
 
 export const registerStore = async (req, res, next) => {
 
@@ -408,3 +409,51 @@ export const getStoreProfile = async (req, res, next) => {
     }
 };
 
+export const getStoreBookings = async (req, res, next) => {
+    const store = req.store;
+    if (!store) {
+        return res.status(404).json({ error: "Store not found" });
+    }
+    try {
+        const bookings = await Booking.find({ store: store })
+            .populate('user', 'fullname email')
+            .populate({
+                path: 'service',
+                populate: {
+                    path: 'service',
+                    model: 'Service',
+                    select: 'name description'
+                }
+            });
+        if (!bookings || bookings.length === 0) {
+            return res.status(404).json({ error: "No bookings found for this store" });
+        }
+        res.status(200).json({ message: "Store bookings retrieved successfully", bookings });
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+}
+
+export const updateBookingStatus = async (req, res, next) => {
+    const bookingId = req.params.bookingId || req.query.bookingId;
+    const { status } = req.body;
+
+    if (!bookingId) {
+        return res.status(400).json({ error: "Booking ID is required" });
+    }
+    if (!status) {
+        return res.status(400).json({ error: "Status is required" });
+    }
+
+    try {
+        const booking = await Booking.findById(bookingId);
+        if (!booking) {
+            return res.status(404).json({ error: "Booking not found" });
+        }
+        booking.status = status;
+        await booking.save();
+        res.status(200).json({ message: "Booking status updated successfully", booking });
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+}

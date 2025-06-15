@@ -33,7 +33,8 @@ const App = () => {
   // Also hide on /setupstore/:step
   const shouldHideNavBar =
     hideNavBarRoutes.includes(location.pathname) ||
-    location.pathname.startsWith('/setupstore/');
+    location.pathname.startsWith('/setupstore/') ||
+    location.pathname.startsWith('/storehomepage');
 
   return (
     <div className='min-h-screen flex flex-col'>
@@ -46,7 +47,6 @@ const App = () => {
           <Route path="/storelanding" element={<StoreLandingPage />}></Route>
           <Route path="/storelogin" element={<StoreLogin />}></Route>
           <Route path="/registerstore" element={<StoreRegister/>}></Route>
-          <Route path="/storehome" element={<StoreHomePage />}></Route>
           <Route path="/setupstore" element={
             <StoreProtectedWrapper>
               <StoreSetup/>
@@ -83,7 +83,7 @@ const App = () => {
           <Route path="/store/:storeId/:storeName/:option" element={
             <StoreDetailPage />
           } />
-          <Route path= "/storehomepage" element = {
+          <Route path= "/storehomepage/*" element = {
             <StoreProtectedWrapper>
               <StoreHomePage />
             </StoreProtectedWrapper>

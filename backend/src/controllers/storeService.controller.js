@@ -45,3 +45,31 @@ export const getStoreServices = async (req, res) => {
     return res.status(500).json({message: error.message});
   }
 }
+
+export const updateStoreService = async (req, res) => {
+  const { serviceId } = req.params;
+  const {price, description } = req.body;
+  if (!serviceId || price == null || !description) {
+    return res.status(400).json({ error: "All fields are required" });
+  }
+  try {
+    const storeService = await StoreService.findById(serviceId);
+    if (!storeService) {
+      return res.status(404).json({ error: "Store service not found" });
+    }
+
+    storeService.price = price;
+    storeService.service.description = description;
+    
+    await storeService.save();
+    
+    const updatedStoreService = await StoreService.findById(serviceId)
+      .populate('service', 'name description');
+    console.log("[updateStoreService] Updated store service:", updatedStoreService);
+    return res.status(200).json(updatedStoreService);
+  }
+  catch (error) {
+    console.log("[updateStoreService] Error:", error);
+    return res.status(500).json({ error: error.message });
+  }
+}

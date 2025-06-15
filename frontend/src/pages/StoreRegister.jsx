@@ -42,7 +42,7 @@ const StoreRegister = () => {
       localStorage.setItem('token', data.token);
       localStorage.setItem('role', 'store');
       console.log(data);
-      navigate('/storehome');
+      navigate('/storehomepage');
     }
     else{
       alert('Store already exists');
@@ -120,7 +120,7 @@ const StoreRegister = () => {
               <button className='bg-blue-500 text-white font-bold py-2 rounded-lg hover:bg-blue-600'>Register</button>
             </form>
             <div className='flex mt-2 justify-end'>
-              <p className='text-gray-300 text-sm leading-6'>Already have an account?<Link to='/loginstore' className='text-blue-200'>Login Now</Link></p>
+              <p className='text-gray-300 text-sm leading-6'>Already have an account?<Link to='/storelogin' className='text-blue-200'>Login Now</Link></p>
             </div>
           </div>
         </div>

@@ -3,7 +3,7 @@ import { getBookings, updateBooking, deleteBooking, getBookingsByUser, getBookin
 
 const router = express.Router();
 
-router.post('/', insertBooking);
+router.post('/add', insertBooking);
 router.get('/', getBookings);
 router.get('/:id', getBookingById);
 router.put('/:id', updateBooking);

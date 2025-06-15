@@ -15,6 +15,7 @@ import UserProfile from './pages/UserProfile.jsx'
 import StoreDetailPage from './pages/StoreDetailPage.jsx'
 import Footer from './components/Footer.jsx'
 import OrderCart from './pages/OrderCart.jsx'
+import MyOrders from './pages/MyOrders.jsx'
 
 const App = () => {
   const location = useLocation();
@@ -90,6 +91,11 @@ const App = () => {
           <Route path= "/checkoutcart" element = {
             <UserProtectedWrapper>
               <OrderCart />
+            </UserProtectedWrapper>
+          }></Route>
+          <Route path= "/bookings" element = {
+            <UserProtectedWrapper>
+              <MyOrders />
             </UserProtectedWrapper>
           }></Route>
         </Routes>

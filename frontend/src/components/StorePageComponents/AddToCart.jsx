@@ -122,7 +122,7 @@ const AddToCart = ({ qty, service, onCartChange, storeId, onCartAnim }) => {
                     item._id === service._id ? { ...item, qty: item.qty + 1 } : item
                 );
             } else {
-                newCart = [...prev, { ...service, qty: 1 }];
+                newCart = [...prev, { ...service, qty: 1, storeId }];
             }
             syncCartToBackend(newCart);
             if (onCartAnim) onCartAnim();
@@ -163,7 +163,7 @@ const AddToCart = ({ qty, service, onCartChange, storeId, onCartAnim }) => {
                     item._id === service._id ? { ...item, qty: item.qty + 1 } : item
                 );
             } else {
-                newCart = [...prev, { ...service, qty: 1 }];
+                newCart = [...prev, { ...service, qty: 1, storeId }];
             }
             syncCartToBackend(newCart);
             if (onCartAnim) onCartAnim();

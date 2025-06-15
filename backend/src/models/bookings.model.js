@@ -11,11 +11,14 @@ const bookingSchema = new Schema({
         ref: 'User',
         required: true
     },
-    service: {
-        type: Schema.Types.ObjectId,
-        ref: 'StoreService',
-        required: true
-    },
+    service:[
+        {
+            type: Schema.Types.ObjectId,
+            ref: 'StoreService',
+            required: true
+        }
+    ]   
+    ,
     date: {
         type: Date,
         required: true
@@ -28,6 +31,14 @@ const bookingSchema = new Schema({
     createdAt: {
         type: Date,
         default: Date.now
+    },
+    paymentId: {
+        type: String,
+        required: true
+    },
+    totalPrice: {
+        type: Number,
+        required: true
     }
 });
 

@@ -1,7 +1,8 @@
 import React from "react";
 import axios from "axios";
-
+import { useNavigate } from "react-router-dom";
 const HandleRazorpayPayment = ({ cart, userData }) => {
+  const navigate = useNavigate();
   const handlePayment = async () => {
     const amount = cart.reduce((sum, item) => sum + item.price * item.qty, 0) + 10.63; // add tax or other charges as needed
 
@@ -46,7 +47,36 @@ const HandleRazorpayPayment = ({ cart, userData }) => {
       )
         .then((res) => {
           console.log("Payment verified successfully:", res.data);
-          // Optionally, you can redirect or show a success message
+          console.log("Creating booking with user data:", userData);
+          console.log("Cart items:", cart);
+          console.log("storeId:", cart[0].store);
+          axios.post(
+            `${import.meta.env.VITE_BASE_URL}/bookings/add`,
+            {
+              user: userData._id,
+              store: cart[0].store, // Assuming all items in cart are from the same store
+              service: cart.map(item => item._id),
+              totalPrice: order.amount / 100, // Convert to rupees
+              paymentId: response.razorpay_payment_id,
+              status: "confirmed",
+              date: new Date()
+            },
+            {
+              withCredentials: true,
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`
+              }
+            }
+          )
+          .then((bookingRes) => {
+            console.log("Booking created successfully:", bookingRes.data);
+            alert("Booking confirmed! Your payment was successful.");
+            navigate("/bookings");
+          })
+          .catch((bookingErr) => {
+            console.error("Booking creation failed:", bookingErr);
+            alert("Booking failed. Please try again.");
+          });
         })
         .catch((err) => {
           console.error("Payment verification failed:", err);

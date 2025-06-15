@@ -1,17 +1,35 @@
 import Booking from "../models/bookings.model.js";
+import storeModel from "../models/store.model.js";
+import userModel from "../models/user.model.js";
 import { createBooking } from "../services/bookings.service.js";
 
 export const insertBooking = async (req, res, next) => {
-    const { store, user, service, date } = req.body;
+    const { store, user, service, date, status, paymentId, totalPrice } = req.body;
+    console.log("Booking request received:", req.body);
 
-    if (!store || !user || !service || !date) {
+    if (!store || !user || !service || !date || !status || !paymentId || !totalPrice) {
         return res.status(400).json({ error: "All fields are required" });
     }
 
     try {
-        const booking = await createBooking(store, user, service, date);
+        const booking = await createBooking(store, user, service, date, paymentId, totalPrice , status);
+        const bookinguser = await userModel.findById(user).populate('bookings');
+        const bookedstore = await storeModel.findById(store).populate('bookings');
+        if (!bookinguser) {
+            return res.status(404).json({ error: "User not found" });
+        }
+        if (!bookedstore) {
+            return res.status(404).json({ error: "Booking not found" });
+        }
+
+        bookinguser.bookings.push(booking._id);
+        bookedstore.bookings.push(booking._id);
+        await bookinguser.save();
+        await bookedstore.save();
+
         res.status(201).json(booking);
     } catch (error) {
+        console.log("Error creating booking:", error);
         return res.status(500).json({ error: error.message });
     }
 }

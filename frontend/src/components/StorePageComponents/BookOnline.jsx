@@ -133,7 +133,8 @@ const BookOnline = ({ storeId }) => {
           item._id === ss._id ? { ...item, qty: item.qty + 1 } : item
         );
       }
-      return [...prev, { ...ss, qty: 1 }];
+      // Add storeId here!
+      return [...prev, { ...ss, qty: 1, storeId }];
     });
     triggerAnim();
   };
@@ -142,9 +143,9 @@ const BookOnline = ({ storeId }) => {
     setCart(prev => {
       const exists = prev.find(item => item._id === ss._id);
       if (!exists && delta > 0) {
-        return [...prev, { ...ss, qty: 1 }];
+        // Add storeId here!
+        return [...prev, { ...ss, qty: 1, storeId }];
       }
-      // Remove item if qty would go to 0
       return prev
         .map(item =>
           item._id === ss._id

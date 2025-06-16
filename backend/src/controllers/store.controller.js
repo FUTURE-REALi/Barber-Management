@@ -7,8 +7,9 @@ import { createRating } from "../services/ratings.service.js";
 import Rating from "../models/ratings.model.js";
 import StoreService from "../models/storeService.model.js";
 import { createStoreService } from "../services/storeService.service.js";
-import { addStoreService, getStoreServices} from "./storeService.controller.js";
+import { addStoreService, getStoreServices } from "./storeService.controller.js";
 import Booking from "../models/bookings.model.js";
+import userModel from "../models/user.model.js";
 
 export const registerStore = async (req, res, next) => {
 
@@ -17,18 +18,18 @@ export const registerStore = async (req, res, next) => {
         return res.status(400).json({ errors: errors.array() });
     }
 
-    const { storename, ownername, password, email, address, phone} = req.body;
+    const { storename, ownername, password, email, address, phone } = req.body;
 
 
-    const alreadyExists = await storeModel.findOne({$or: [{email: email}, {address: address}]});
+    const alreadyExists = await storeModel.findOne({ $or: [{ email: email }, { address: address }] });
 
-    if(alreadyExists) {
-        return res.status(400).json({error: "Store already exists"});
+    if (alreadyExists) {
+        return res.status(400).json({ error: "Store already exists" });
     }
 
     try {
-        const openingTime ="09:00";
-        const closingTime ="21:00";
+        const openingTime = "09:00";
+        const closingTime = "21:00";
         const newstore = await createStore(storename, ownername, password, email, address, phone, openingTime, closingTime);
         const token = newstore.generateToken();
         res.cookie('token', token, {
@@ -37,27 +38,27 @@ export const registerStore = async (req, res, next) => {
             sameSite: 'lax',
             path: '/',
         });
-        res.status(201).json({token,newstore});
+        res.status(201).json({ token, newstore });
         console.log(newstore);
         console.log(newstore._id);
-    } 
+    }
     catch (error) {
-        return res.status(500).json({error: error.message});
+        return res.status(500).json({ error: error.message });
     }
 }
 
 export const loginStore = async (req, res, next) => {
     const { email, password } = req.body;
 
-    if(!email || !password) {
-        return res.status(400).json({error: "Please fill in all fields"});
+    if (!email || !password) {
+        return res.status(400).json({ error: "Please fill in all fields" });
     }
 
     try {
-        const store = await storeModel.findOne({email});
+        const store = await storeModel.findOne({ email });
         const isMatch = await store.matchPassword(password);
-        if(!store || !isMatch) {
-            return res.status(400).json({error: "Invalid Credentials"});
+        if (!store || !isMatch) {
+            return res.status(400).json({ error: "Invalid Credentials" });
         }
         const token = store.generateToken();
         res.cookie('token', token, {
@@ -66,67 +67,67 @@ export const loginStore = async (req, res, next) => {
             sameSite: 'lax',
             path: '/',
         });
-        res.status(200).json({token,store});
-    } 
+        res.status(200).json({ token, store });
+    }
     catch (error) {
-        return res.status(500).json({error: error.message});
+        return res.status(500).json({ error: error.message });
     }
 }
 
 export const logoutStore = async (req, res, next) => {
     const token = req.cookies.token || res.headers.authorization.split(' ')[1];
 
-    if(!token){
-        return res.status(401).json({message: "You need to login first"});
+    if (!token) {
+        return res.status(401).json({ message: "You need to login first" });
     }
-    
+
     res.clearCookie('token');
-    res.status(200).json({message: "Logged out successfully"});
+    res.status(200).json({ message: "Logged out successfully" });
 }
 
-export const toggleStatus = async (req,res,next) => {
+export const toggleStatus = async (req, res, next) => {
     const store = await storeModel.findById(req.store._id);
-    if(!store){
-        return res.status(404).json({error: "Store not found"});
+    if (!store) {
+        return res.status(404).json({ error: "Store not found" });
     }
     const status = store.toggleStatus();
-    res.status(200).json({message: "Status updated successfully"});
+    res.status(200).json({ message: "Status updated successfully" });
     return status;
 }
 
-export const includedServices = async (req,res,next) => {
-    try{
+export const includedServices = async (req, res, next) => {
+    try {
         const store = req.store;
-        if(!store){
-            return res.status(404).json({error: "Store not found"});
+        if (!store) {
+            return res.status(404).json({ error: "Store not found" });
         }
         const listOfServices = req.body.services;
         console.log(listOfServices);
 
-        for(let i=0; i<listOfServices.length; i++){
-            
-            let service = await Service.findOne({name: listOfServices[i].name});
+        for (let i = 0; i < listOfServices.length; i++) {
 
-            if(!service){
+            let service = await Service.findOne({ name: listOfServices[i].name });
+
+            if (!service) {
                 service = await createService(listOfServices[i].name, listOfServices[i].description);
             }
 
-            let storeService = await storeService.findOne({name: listOfServices[i].name, store: store._id, service: service._id});
+            let storeService = await storeService.findOne({ name: listOfServices[i].name, store: store._id, service: service._id });
 
-            if(!storeService){
+            if (!storeService) {
                 storeService = await createStoreService(store._id, service._id, listOfServices[i].price, listOfServices[i].duration);
             }
-            
+
             await store.addService(storeService._id);
 
             storeService.addStore(store._id);
             service.addStore(store._id);
         }
-        res.status(200).json({message: "Services added successfully", services: store.storeService});
+        res.status(200).json({ message: "Services added successfully", services: store.storeService });
         console.log(store.storeService);
     }
-    catch(error){
-        return res.status(500).json({error: error.message});
+    catch (error) {
+        return res.status(500).json({ error: error.message });
     }
 }
 
@@ -456,4 +457,159 @@ export const updateBookingStatus = async (req, res, next) => {
     } catch (error) {
         return res.status(500).json({ error: error.message });
     }
-}
+};
+
+export const getStoreInsights = async (req, res) => {
+    const storeId = req.params.storeId;
+    if (!storeId) {
+        return res.status(400).json({ error: "Store ID is required" });
+    }
+    try {
+        // Get all bookings for this store, with user and service populated
+        const bookings = await Booking.find({ store: storeId })
+            .populate({
+                path: "service",
+                populate: { path: "service", select: "name" },
+            })
+            .populate("user", "fullname address");
+
+        // Service usage count
+        const serviceCount = {};
+        bookings.forEach((b) => {
+            (b.service || []).forEach((ss) => {
+                const name = ss?.service?.name || "Unknown";
+                serviceCount[name] = (serviceCount[name] || 0) + 1;
+            });
+        });
+        const serviceStats = Object.entries(serviceCount).map(([name, count]) => ({
+            name,
+            count,
+        }));
+
+        // Most used service
+        const maxService =
+            serviceStats.length > 0
+                ? serviceStats.reduce((a, b) => (a.count > b.count ? a : b))
+                : null;
+
+        // User preferences (most booked service per user)
+        const userPrefsMap = {};
+        bookings.forEach((b) => {
+            const user = b.user?.fullname || "Unknown";
+            (b.service || []).forEach((ss) => {
+                const name = ss?.service?.name || "Unknown";
+                if (!userPrefsMap[name]) userPrefsMap[name] = 0;
+                userPrefsMap[name]++;
+            });
+        });
+        const userPrefs = Object.entries(userPrefsMap).map(([preference, count]) => ({
+            preference,
+            count,
+        }));
+
+        // Location stats (city or area from user address)
+        const locationCount = {};
+        bookings.forEach((b) => {
+            const loc =
+                b.user?.address?.city ||
+                b.user?.address?.building ||
+                "Unknown Location";
+            locationCount[loc] = (locationCount[loc] || 0) + 1;
+        });
+        const locationStats = Object.entries(locationCount).map(([location, count]) => ({
+            location,
+            count,
+        }));
+
+        res.status(200).json({
+            serviceStats,
+            maxService,
+            userPrefs,
+            locationStats,
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+export const getPayoutStats = async (req, res) => {
+    const storeId = req.params.storeId;
+    const { timeFrame = "month" } = req.query;
+
+    if (!storeId) {
+        return res.status(400).json({ error: "Store ID is required" });
+    }
+
+    try {
+        // Get all bookings for this store
+        const bookings = await Booking.find({ store: storeId, status: { $ne: "cancelled" } });
+
+        // Total sales and orders
+        const totalSales = bookings.reduce((sum, b) => sum + (b.totalPrice || 0), 0);
+        const totalOrders = bookings.length;
+
+        // Group sales by time frame
+        let salesData = [];
+        const now = new Date();
+
+        if (timeFrame === "day") {
+            // 24 hours
+            salesData = Array.from({ length: 24 }, (_, i) => ({
+                label: `${i}:00`,
+                sales: 0,
+            }));
+            bookings.forEach((b) => {
+                const hour = new Date(b.date).getHours();
+                salesData[hour].sales += b.totalPrice || 0;
+            });
+        } else if (timeFrame === "month") {
+            // Days in current month
+            const days = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+            salesData = Array.from({ length: days }, (_, i) => ({
+                label: `Day ${i + 1}`,
+                sales: 0,
+            }));
+            bookings.forEach((b) => {
+                const d = new Date(b.date);
+                if (d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()) {
+                    salesData[d.getDate() - 1].sales += b.totalPrice || 0;
+                }
+            });
+        } else if (timeFrame === "year") {
+            // 12 months
+            const months = [
+                "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+            ];
+            salesData = months.map((m) => ({ label: m, sales: 0 }));
+            bookings.forEach((b) => {
+                const d = new Date(b.date);
+                if (d.getFullYear() === now.getFullYear()) {
+                    salesData[d.getMonth()].sales += b.totalPrice || 0;
+                }
+            });
+        } else if (timeFrame === "decade") {
+            // Last 10 years
+            const currentYear = now.getFullYear();
+            salesData = Array.from({ length: 10 }, (_, i) => ({
+                label: `${currentYear - 9 + i}`,
+                sales: 0,
+            }));
+            bookings.forEach((b) => {
+                const d = new Date(b.date);
+                const idx = d.getFullYear() - (currentYear - 9);
+                if (idx >= 0 && idx < 10) {
+                    salesData[idx].sales += b.totalPrice || 0;
+                }
+            });
+        }
+
+        res.status(200).json({
+            salesData,
+            totalSales,
+            totalOrders,
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};

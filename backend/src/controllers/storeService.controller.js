@@ -6,6 +6,8 @@ export const addStoreService = async (req, res) => {
   const { service, price, duration } = req.body;
   console.log("[addStoreService] storeId:", storeId, "service:", service, "price:", price, "duration:", duration);
 
+  console.log("[addStoreService] Request body:", req.body);
+  console.log("[addStoreService] Request store:", req.store);
   if (!storeId || !service || price == null || duration == null) {
     console.log("[addStoreService] Store ID, service, price, or duration is missing");
     return res.status(400).json({ error: "All fields are required" });
@@ -39,7 +41,7 @@ export const getStoreServices = async (req, res) => {
   try {
     const services = await StoreService.find({store: storeId})
       .populate('service', 'name description')
-      .select('price duration service');
+      .select('price duration service discount');
     return res.status(200).json(services);
   } catch (error) {
     return res.status(500).json({message: error.message});
@@ -48,28 +50,27 @@ export const getStoreServices = async (req, res) => {
 
 export const updateStoreService = async (req, res) => {
   const { serviceId } = req.params;
-  const {price, description } = req.body;
-  if (!serviceId || price == null || !description) {
-    return res.status(400).json({ error: "All fields are required" });
+  const { price, description, discount } = req.body;
+  if (!serviceId) {
+    return res.status(400).json({ error: "Service ID is required" });
   }
   try {
-    const storeService = await StoreService.findById(serviceId);
+    const storeService = await StoreService.findById(serviceId).populate('service');
     if (!storeService) {
       return res.status(404).json({ error: "Store service not found" });
     }
-
-    storeService.price = price;
-    storeService.service.description = description;
-    
+    if (price != null) storeService.price = price;
+    if (discount != null) storeService.discount = discount;
+    if (description) {
+      storeService.service.description = description;
+      await storeService.service.save();
+    }
     await storeService.save();
-    
     const updatedStoreService = await StoreService.findById(serviceId)
       .populate('service', 'name description');
-    console.log("[updateStoreService] Updated store service:", updatedStoreService);
     return res.status(200).json(updatedStoreService);
   }
   catch (error) {
-    console.log("[updateStoreService] Error:", error);
     return res.status(500).json({ error: error.message });
   }
 }

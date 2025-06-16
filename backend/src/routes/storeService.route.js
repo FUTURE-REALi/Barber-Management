@@ -4,7 +4,7 @@ import { authStore } from '../middlewares/auth.middleware.js';
 const router = express.Router();
 
 router.get('/get-store-services/:storeId', getStoreServices);
-router.post('/add-store-service', addStoreService);
+router.post('/add-store-service', authStore,addStoreService);
 router.put('/update-store-service/:serviceId',authStore, updateStoreService);
 
 export default router;

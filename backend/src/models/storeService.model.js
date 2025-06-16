@@ -23,6 +23,12 @@ const storeServiceSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: "Rating",
     },
+    discount: {
+        type: Number,
+        default: 0,
+        min: 0,
+        max: 100
+    }
 });
 
 storeServiceSchema.methods.addStore = async function (storeId) {

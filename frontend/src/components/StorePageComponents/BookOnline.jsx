@@ -162,6 +162,14 @@ const BookOnline = ({ storeId }) => {
     return found ? found.qty : 0;
   };
 
+  // Helper to calculate discounted price
+  const getDiscountedPrice = (ss) => {
+    if (ss.discount && ss.discount > 0) {
+      return Math.round(ss.price * (1 - ss.discount / 100));
+    }
+    return ss.price;
+  };
+
   return (
     <div className="flex w-full h-[70vh] bg-white rounded shadow overflow-hidden">
       {/* Left: Categories */}
@@ -240,13 +248,28 @@ const BookOnline = ({ storeId }) => {
               ) : (
                 cat.items.map((ss, i) => {
                   const qty = getCartQty(ss);
+                  console.log('Service:', ss);
+                  const hasDiscount = ss.discount && ss.discount > 0;
+                  const discountedPrice = getDiscountedPrice(ss);
                   return (
                     <div key={ss._id} className="flex flex-col gap-1 border-b pb-4">
                       <div className="flex items-center gap-2">
                         <span className="border border-green-500 text-green-600 rounded w-5 h-5 flex items-center justify-center text-xs font-bold">🟩</span>
                         <span className="text-lg font-semibold">{ss.service?.name}</span>
                       </div>
-                      <span className="text-gray-700 font-medium">₹{ss.price}</span>
+                      <span className="text-gray-700 font-medium">
+                        {hasDiscount ? (
+                          <>
+                            <span className="line-through text-gray-400 mr-2">₹{ss.price}</span>
+                            <span className="text-green-700 font-bold">₹{discountedPrice}</span>
+                            <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded font-semibold">
+                              {ss.discount}% OFF
+                            </span>
+                          </>
+                        ) : (
+                          <>₹{ss.price}</>
+                        )}
+                      </span>
                       <span className="text-gray-500 text-sm">{ss.service?.description}</span>
                       <span className="text-gray-500 text-sm">Duration: {ss.duration} min</span>
                       {/* Use AddToCart component and pass setCart and storeId */}

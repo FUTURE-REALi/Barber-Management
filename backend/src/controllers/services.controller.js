@@ -10,7 +10,7 @@ export const insertService = async (req, res, next) => {
     const isAlreadyService = await Service.findOne({name:name});
 
     if(isAlreadyService) {
-        return res.status(400).json({error: "Service already exists"});
+        return res.status(201).json(isAlreadyService);
     }
 
     try {

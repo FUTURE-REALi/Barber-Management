@@ -170,28 +170,38 @@ const BookOnline = ({ storeId }) => {
     return ss.price;
   };
 
+  // Helper for description truncation
+  const getShortDescription = (desc, max = 80) => {
+    if (!desc) return "";
+    return desc.length > max ? desc.slice(0, max) + "..." : desc;
+  };
+
   return (
-    <div className="flex w-full h-[70vh] bg-white rounded shadow overflow-hidden">
+    <div className="flex w-full bg-white rounded shadow overflow-hidden" style={{ height: "80vh", minHeight: 480 }}>
       {/* Left: Categories */}
       <div
-        className="w-1/4 min-w-[220px] border-r bg-gray-50 h-full overflow-y-auto"
+        className="w-72 min-w-[220px] border-r bg-white h-full overflow-y-auto"
         style={{
           scrollbarWidth: 'none',
-          msOverflowStyle: 'none'
+          msOverflowStyle: 'none',
+          height: "100%",
         }}
       >
         <ul className="py-4">
           {filteredCategories.map((cat, idx) => (
             <li
               key={cat.name}
-              className={`px-6 py-2 cursor-pointer text-lg transition-all duration-200 ${
-                selectedCategory === cat.name
+              className={`px-6 py-2 cursor-pointer text-lg transition-all duration-200 flex items-center justify-between
+                ${selectedCategory === cat.name
                   ? 'text-red-500 font-bold border-l-4 border-red-400 bg-red-50'
                   : 'text-gray-700 hover:bg-gray-100'
-              }`}
+                }`}
               onClick={() => handleCategoryClick(idx)}
             >
-              {cat.name} <span className="text-gray-400 text-base">({cat.items.length})</span>
+              <span>{cat.name}</span>
+              <span className={`ml-2 text-base font-semibold ${selectedCategory === cat.name ? "text-red-400" : "text-gray-400"}`}>
+                ({cat.items.length})
+              </span>
             </li>
           ))}
         </ul>
@@ -208,21 +218,22 @@ const BookOnline = ({ storeId }) => {
         style={{
           scrollbarWidth: 'none',
           msOverflowStyle: 'none',
-          scrollBehavior: 'smooth'
+          scrollBehavior: 'smooth',
+          height: "100%",
         }}
         onScroll={handleScroll}
       >
         {/* Top bar with search */}
-        <div className="sticky top-0 bg-white flex items-center gap-4 mb-2 justify-between border-b border-gray-200" style={{boxShadow: '0 2px 8px 0 rgba(0,0,0,0.03)'}}>
+        <div className="sticky top-0 bg-white flex items-center gap-4 mb-2 justify-between border-b border-gray-200 z-10" style={{boxShadow: '0 2px 8px 0 rgba(0,0,0,0.03)'}}>
           <div className="flex items-center gap-4">
-            <h2 className="text-2xl font-bold">Order Online</h2>
-            <span className="text-gray-400 text-sm flex items-center gap-1">
-              <span className="material-icons text-base">schedule</span>
-              36 min
-            </span>
+            <h2 className="text-3xl font-bold text-gray-800">Order Online</h2>
             <span className="text-gray-400 text-sm flex items-center gap-1">
               <span className="material-icons text-base">track_changes</span>
               Live track your order
+            </span>
+            <span className="text-gray-400 text-sm flex items-center gap-1">
+              <span className="material-icons text-base">schedule</span>
+              24 min
             </span>
           </div>
           <div>
@@ -231,74 +242,111 @@ const BookOnline = ({ storeId }) => {
               placeholder="Search within menu..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="border rounded px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-red-200"
+              className="border rounded px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-red-200"
+              style={{ minWidth: 220 }}
             />
           </div>
         </div>
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-10">
           {filteredCategories.map((cat, idx) => (
             <div
               key={cat.name}
               ref={el => (sectionRefs.current[idx] = el)}
               className="mb-2 transition-all duration-300"
             >
-              <h3 className="text-xl font-semibold mt-6 mb-4">{cat.name}</h3>
-              {cat.items.length === 0 ? (
-                <span className="text-gray-400">No items found.</span>
-              ) : (
-                cat.items.map((ss, i) => {
-                  const qty = getCartQty(ss);
-                  console.log('Service:', ss);
-                  const hasDiscount = ss.discount && ss.discount > 0;
-                  const discountedPrice = getDiscountedPrice(ss);
-                  return (
-                    <div key={ss._id} className="flex flex-col gap-1 border-b pb-4">
-                      <div className="flex items-center gap-2">
-                        <span className="border border-green-500 text-green-600 rounded w-5 h-5 flex items-center justify-center text-xs font-bold">🟩</span>
-                        <span className="text-lg font-semibold">{ss.service?.name}</span>
+              <h3 className="text-2xl font-bold mt-8 mb-6 text-gray-900">{cat.name}</h3>
+              <div className="flex flex-col gap-6">
+                {cat.items.length === 0 ? (
+                  <span className="text-gray-400">No items found.</span>
+                ) : (
+                  cat.items.map((ss, i) => {
+                    const qty = getCartQty(ss);
+                    const hasDiscount = ss.discount && ss.discount > 0;
+                    const discountedPrice = getDiscountedPrice(ss);
+                    return (
+                      <div
+                        key={ss._id}
+                        className="flex flex-row gap-6 items-start border-b pb-6"
+                        style={{ minHeight: 120 }}
+                      >
+                        {/* Service Image */}
+                        <div className="w-28 h-28 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center">
+                          {ss.service?.image ? (
+                            <img
+                              src={ss.service.image}
+                              alt={ss.service?.name}
+                              className="object-cover w-full h-full"
+                            />
+                          ) : (
+                            <span className="material-icons text-5xl text-gray-300">image</span>
+                          )}
+                        </div>
+                        {/* Service Info */}
+                        <div className="flex-1 flex flex-col gap-1">
+                          <div className="flex items-center gap-2">
+                            <span className="border border-green-500 text-green-600 rounded w-5 h-5 flex items-center justify-center text-xs font-bold">🟩</span>
+                            <span className="text-lg font-semibold">{ss.service?.name}</span>
+                            {ss.isBestseller && (
+                              <span className="ml-2 px-2 py-0.5 bg-orange-100 text-orange-700 text-xs rounded font-semibold">
+                                BESTSELLER
+                              </span>
+                            )}
+                            {hasDiscount && (
+                              <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded font-semibold">
+                                {ss.discount}% OFF
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-gray-700 font-medium">
+                            {hasDiscount ? (
+                              <>
+                                <span className="line-through text-gray-400 mr-2">₹{ss.price}</span>
+                                <span className="text-green-700 font-bold">₹{discountedPrice}</span>
+                              </>
+                            ) : (
+                              <>₹{ss.price}</>
+                            )}
+                          </span>
+                          <span className="text-gray-500 text-sm">
+                            {getShortDescription(ss.service?.description)}
+                            {ss.service?.description && ss.service.description.length > 80 && (
+                              <span className="text-blue-500 cursor-pointer ml-1" title={ss.service.description}>
+                                read more
+                              </span>
+                            )}
+                          </span>
+                          <span className="text-gray-500 text-sm">Duration: {ss.duration} min</span>
+                          {/* AddToCart */}
+                          <div className="mt-2">
+                            <AddToCart
+                              qty={qty}
+                              service={ss}
+                              storeId={storeId}
+                              onCartChange={setCart}
+                              onCartAnim={triggerAnim}
+                            />
+                          </div>
+                          {/* Reviews */}
+                          <div className="mt-2">
+                            <span className="font-semibold text-gray-700">Reviews:</span>
+                            {reviews[ss.service?._id] && reviews[ss.service?._id].length > 0 ? (
+                              <ul className="ml-4 mt-1">
+                                {reviews[ss.service._id].map((review, i) => (
+                                  <li key={review._id || i} className="text-gray-600 text-sm mb-1">
+                                    <span className="font-semibold">{review.user?.name || 'User'}:</span> {review.reviewText} <span className="text-yellow-600">({review.rating}★)</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            ) : (
+                              <span className="text-gray-400 ml-2">No reviews yet.</span>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                      <span className="text-gray-700 font-medium">
-                        {hasDiscount ? (
-                          <>
-                            <span className="line-through text-gray-400 mr-2">₹{ss.price}</span>
-                            <span className="text-green-700 font-bold">₹{discountedPrice}</span>
-                            <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded font-semibold">
-                              {ss.discount}% OFF
-                            </span>
-                          </>
-                        ) : (
-                          <>₹{ss.price}</>
-                        )}
-                      </span>
-                      <span className="text-gray-500 text-sm">{ss.service?.description}</span>
-                      <span className="text-gray-500 text-sm">Duration: {ss.duration} min</span>
-                      {/* Use AddToCart component and pass setCart and storeId */}
-                      <AddToCart
-                        qty={qty}
-                        service={ss}
-                        storeId={storeId}
-                        onCartChange={setCart}
-                        onCartAnim={triggerAnim}
-                      />
-                      {/* Reviews */}
-                      <div className="mt-2">
-                        <span className="font-semibold text-gray-700">Reviews:</span>
-                        {reviews[ss.service?._id] && reviews[ss.service?._id].length > 0 ? (
-                          <ul className="ml-4 mt-1">
-                            {reviews[ss.service._id].map((review, i) => (
-                              <li key={review._id || i} className="text-gray-600 text-sm mb-1">
-                                <span className="font-semibold">{review.user?.name || 'User'}:</span> {review.reviewText} <span className="text-yellow-600">({review.rating}★)</span>
-                              </li>
-                            ))}
-                          </ul>
-                        ) : (
-                          <span className="text-gray-400 ml-2">No reviews yet.</span>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })
-              )}
+                    );
+                  })
+                )}
+              </div>
             </div>
           ))}
         </div>

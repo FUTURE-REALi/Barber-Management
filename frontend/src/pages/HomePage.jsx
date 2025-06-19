@@ -6,10 +6,12 @@ import SearchBox from '../components/HomePageComponents/SearchBox';
 
 const HomePage = () => {
   const [stores, setStores] = useState([]);
+  const [filteredStores, setFilteredStores] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [userServices, setUserServices] = useState([]);
   const [userStores, setUserStores] = useState([]);
   const [topStores, setTopStores] = useState([]);
+  const [filterType, setFilterType] = useState('none'); // 'none' | 'rating' | 'service' | 'distance'
   const { userData } = useContext(UserDataContext);
 
   useEffect(() => {
@@ -33,10 +35,12 @@ const HomePage = () => {
         // Top rated stores (top 6)
         const sorted = [...allStores].sort((a, b) => (b.rating || 0) - (a.rating || 0));
         setTopStores(sorted.slice(0, 6));
+        setFilteredStores(allStores);
       }
     } catch (error) {
       setStores([]);
       setTopStores([]);
+      setFilteredStores([]);
     }
   };
 
@@ -74,6 +78,30 @@ const HomePage = () => {
     fetchStores(searchQuery);
   };
 
+  // Filtering logic
+  useEffect(() => {
+    let filtered = [...stores];
+    if (filterType === 'rating') {
+      filtered = filtered.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+    } else if (filterType === 'service') {
+      // Show stores that have at least one of the user's previously booked services
+      if (userServices.length > 0) {
+        filtered = filtered.filter(store =>
+          store.services &&
+          store.services.some(s =>
+            userServices.some(us => us._id === s._id)
+          )
+        );
+      }
+    } else if (filterType === 'distance') {
+      // Assuming store.distance is available (in km)
+      filtered = filtered
+        .filter(store => typeof store.distance === 'number')
+        .sort((a, b) => a.distance - b.distance);
+    }
+    setFilteredStores(filtered);
+  }, [filterType, stores, userServices]);
+
   // Merge top stores and user's previously chosen stores (no duplicates)
   const mergedTopStores = [
     ...userStores,
@@ -99,11 +127,38 @@ const HomePage = () => {
 
       {/* Filters */}
       <div className="max-w-5xl mx-auto mt-6 flex gap-4">
-        <button className="border px-4 py-1 rounded-full text-gray-700 bg-white shadow-sm flex items-center gap-2">
-          <span className="material-icons text-base">filter_list</span> Filters
+        <button
+          className={`border px-4 py-1 rounded-full text-gray-700 bg-white shadow-sm flex items-center gap-2 ${
+            filterType === 'none' ? 'border-red-400 text-red-500' : ''
+          }`}
+          onClick={() => setFilterType('none')}
+        >
+          <span className="material-icons text-base">filter_list</span> All
         </button>
-        <button className="border px-4 py-1 rounded-full text-gray-700 bg-white shadow-sm">Pure Veg</button>
-        <button className="border px-4 py-1 rounded-full text-gray-700 bg-white shadow-sm">Cuisines</button>
+        <button
+          className={`border px-4 py-1 rounded-full text-gray-700 bg-white shadow-sm ${
+            filterType === 'rating' ? 'border-red-400 text-red-500' : ''
+          }`}
+          onClick={() => setFilterType('rating')}
+        >
+          Highest Rating
+        </button>
+        <button
+          className={`border px-4 py-1 rounded-full text-gray-700 bg-white shadow-sm ${
+            filterType === 'service' ? 'border-red-400 text-red-500' : ''
+          }`}
+          onClick={() => setFilterType('service')}
+        >
+          Services You Booked
+        </button>
+        <button
+          className={`border px-4 py-1 rounded-full text-gray-700 bg-white shadow-sm ${
+            filterType === 'distance' ? 'border-red-400 text-red-500' : ''
+          }`}
+          onClick={() => setFilterType('distance')}
+        >
+          Nearest
+        </button>
       </div>
 
       {/* User's previously booked services */}
@@ -151,10 +206,10 @@ const HomePage = () => {
           Food Delivery Restaurants in Allahabad
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-          {stores.length === 0 ? (
+          {filteredStores.length === 0 ? (
             <p className="text-gray-500 col-span-full">No salons found.</p>
           ) : (
-            stores.map(store => (
+            filteredStores.map(store => (
               <div
                 key={store._id}
                 className="bg-white rounded-xl shadow-md overflow-hidden flex flex-col hover:shadow-lg transition"
@@ -175,6 +230,12 @@ const HomePage = () => {
                   <span className="absolute top-2 right-2 bg-green-600 text-white text-xs px-2 py-1 rounded">
                     {store.rating ? store.rating : "4.2"}
                   </span>
+                  {/* Example distance */}
+                  {typeof store.distance === 'number' && (
+                    <span className="absolute bottom-2 right-2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-80">
+                      {store.distance} km
+                    </span>
+                  )}
                 </div>
                 <div className="p-4 flex-1 flex flex-col">
                   <h3 className="font-semibold text-lg text-gray-800">{store.storename}</h3>

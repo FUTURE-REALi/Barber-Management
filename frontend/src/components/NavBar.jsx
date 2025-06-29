@@ -24,7 +24,7 @@ const NavBar = () => {
           <Link to="/" className="text-white text-2xl font-bold">
             PocketSalon
           </Link>
-          <div className="flex space-x-4 text-lg">
+          <div className="flex space-x-4 text-lg items-center">
             <Link to="/" className="text-white hover:text-gray-400">
               Home
             </Link>
@@ -33,6 +33,9 @@ const NavBar = () => {
             </Link>
             <Link to="/history" className="text-white hover:text-gray-400">
               History
+            </Link>
+            <Link to="/checkoutcart" className="text-white hover:text-gray-400">
+              Checkout Cart
             </Link>
             <div className="relative">
               <Link to="/getuserprofile" className="text-white hover:text-gray-400 cursor-pointer"

@@ -23,7 +23,6 @@ const HomePage = () => {
   useEffect(() => {
     fetchStores();
     fetchUserHistory();
-    // eslint-disable-next-line
   }, [userAddress]);
 
   // Fetch all stores and calculate distance from backend
@@ -200,14 +199,34 @@ const HomePage = () => {
           <div className="text-gray-400 text-center py-8">No previous services found.</div>
         ) : (
           <div className="flex gap-6 overflow-x-auto pb-2">
-            {userServices.map(service => (
-              <div key={service._id} className="flex flex-col items-center min-w-[90px]">
-                <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-gray-200 shadow">
-                  <img src={service.image || "/service.jpg"} alt={service.name} className="w-full h-full object-cover" />
+            {userStores.length > 0 && userServices.length > 0 ? (
+              userStores.map(store => (
+                store.services && store.services.length > 0 ? (
+                  store.services.map(service => (
+                    <Link
+                      key={service._id + store._id}
+                      to={`/store/${store._id}/${store.storename}`}
+                      className="flex flex-col items-center min-w-[120px] hover:bg-gray-100 rounded-lg p-2 transition"
+                    >
+                      <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-gray-200 shadow">
+                        <img src={store.imageUrl || "/a.jpg"} alt={store.storename} className="w-full h-full object-cover" />
+                      </div>
+                      <span className="mt-2 text-sm font-medium text-gray-700 text-center">{service.name}</span>
+                      <span className="text-xs text-gray-500 text-center">{store.storename}</span>
+                    </Link>
+                  ))
+                ) : null
+              ))
+            ) : (
+              userServices.map(service => (
+                <div key={service._id} className="flex flex-col items-center min-w-[90px]">
+                  <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-gray-200 shadow">
+                    <img src={service.image || "/service.jpg"} alt={service.name} className="w-full h-full object-cover" />
+                  </div>
+                  <span className="mt-2 text-sm font-medium text-gray-700 text-center">{service.name}</span>
                 </div>
-                <span className="mt-2 text-sm font-medium text-gray-700 text-center">{service.name}</span>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         )}
       </div>

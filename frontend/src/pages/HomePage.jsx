@@ -203,7 +203,7 @@ const HomePage = () => {
       {/* Store Cards */}
       <div className="max-w-5xl mx-auto mt-10">
         <h2 className="text-xl font-bold mb-4 text-gray-800">
-          Food Delivery Restaurants in Allahabad
+          Salons in Allahabad
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
           {filteredStores.length === 0 ? (

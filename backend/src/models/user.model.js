@@ -25,7 +25,7 @@ const userSchema = new Schema({
         trim: true,
         lowercase: true,
     },
-    address: {
+    address: [{
         building: {
             type: String,
         },
@@ -38,7 +38,7 @@ const userSchema = new Schema({
         state: {
             type: String,
         },
-    },
+    }],
     ratings: [{
         type: Schema.Types.ObjectId,
         ref: "Rating"

@@ -84,3 +84,29 @@ export const getUserProfile = async (req, res, next) => {
     }
 }
 
+export const updateUserAddress = async (req, res) => {
+    const userId = req.params.id;
+    const { locations } = req.body; 
+    if (!userId || !Array.isArray(locations)) {
+        return res.status(400).json({ message: "User ID and locations array are required" });
+    }
+    try {
+        const user = await userModel.findById(userId);
+        if (!user) return res.status(404).json({ message: "User not found" });
+
+        console.log("Updating user address with locations:", locations);
+        // Replace the user's address array with the new locations array
+        user.address = locations.map(location => ({
+            building: location.building || "",
+            street: location.street || "",
+            city: location.city || "",
+            state: location.state || ""
+        }));
+
+        await user.save();
+        res.status(200).json({ message: "Address updated", user });
+        console.log(user);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};

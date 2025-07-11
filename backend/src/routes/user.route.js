@@ -1,6 +1,6 @@
 import express from 'express';
 import {body} from 'express-validator';
-import {getUserProfile, loginUser, logoutUser, registerUser} from '../controllers/user.controller.js';
+import {getUserProfile, loginUser, logoutUser, registerUser, updateUserAddress} from '../controllers/user.controller.js';
 import {authUser} from '../middlewares/auth.middleware.js';
 
 const router = express.Router();
@@ -23,5 +23,7 @@ loginUser);
 router.get('/logout', authUser,logoutUser);
 
 router.get('/profile', authUser, getUserProfile);
+
+router.put('/update-location/:id', authUser, updateUserAddress);
 
 export default router;

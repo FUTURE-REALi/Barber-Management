@@ -8,7 +8,9 @@ export const createUser = async (fullname,username,email,password) =>{
         fullname,
         username,
         email,
-        password
+        password,
+        address: [],
+        ratings: [],
     });
     return newuser;
 }

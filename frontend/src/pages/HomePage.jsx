@@ -142,12 +142,23 @@ const HomePage = () => {
   }, [filterType, stores, userServices]);
 
   // Merge top stores and user's previously chosen stores (no duplicates)
-  const mergedTopStores = [
-    ...userStores,
-    ...topStores.filter(
-      s => !userStores.some(us => us._id === s._id)
-    ),
-  ].slice(0, 6);
+  const mergedTopStores = [];
+  const seen = new Set();
+
+  userStores.forEach(store => {
+    if (store && store._id && !seen.has(store._id.toString())) {
+      mergedTopStores.push(store);
+      seen.add(store._id.toString());
+    }
+  });
+  topStores.forEach(store => {
+    if (store && store._id && !seen.has(store._id.toString())) {
+      mergedTopStores.push(store);
+      seen.add(store._id.toString());
+    }
+  });
+
+  const mergedTopStoresLimited = mergedTopStores.slice(0, 6);
 
   return (
     <div className="min-h-screen w-full bg-gray-50">
@@ -225,11 +236,11 @@ const HomePage = () => {
       {/* Top stores for you */}
       <div className="max-w-5xl mx-auto mt-10">
         <h2 className="text-xl font-bold mb-4 text-gray-800">Top stores for you</h2>
-        {mergedTopStores.length === 0 ? (
+        {mergedTopStoresLimited.length === 0 ? (
           <div className="text-gray-400 text-center py-8">No top stores found.</div>
         ) : (
           <div className="flex gap-8 overflow-x-auto pb-2">
-            {mergedTopStores.map(store => (
+            {mergedTopStoresLimited.map(store => (
               <div key={store._id} className="flex flex-col items-center min-w-[90px]">
                 <div className="w-20 h-20 rounded-full overflow-hidden bg-white border-2 border-gray-200 shadow flex items-center justify-center">
                   <img src={store.imageUrl || "/a.jpg"} alt={store.storename} className="w-14 h-14 object-contain" />

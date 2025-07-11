@@ -94,7 +94,14 @@ export const getBookingsByUser = async (req, res, next) => {
     const { userId } = req.params;
 
     try {
-        const bookings = await Booking.find({ user: userId }).populate('store service');
+        const bookings = await Booking.find({ user: userId }).populate('user')
+            .populate({
+                path: 'service',
+                populate: {
+                    path: 'service',
+                    model: 'Service'
+                }
+            });
         if (!bookings.length) {
             return res.status(404).json({ error: "No bookings found for this user" });
         }

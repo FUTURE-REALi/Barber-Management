@@ -32,6 +32,7 @@ import orderCartRoute from './src/routes/orderCart.route.js';
 import paymentRoute from './src/routes/payment.route.js';
 import promocodeRoutes from "./src/routes/promocode.route.js";
 import campaignRoutes from "./src/routes/campaign.route.js";
+import distanceRoute from './src/routes/distance.route.js';
 
 app.use('/users', userRoute);
 app.use('/stores', storeRoute);
@@ -42,5 +43,5 @@ app.use('/order-cart', orderCartRoute);
 app.use('/payment',paymentRoute);
 app.use("/promocode", promocodeRoutes);
 app.use("/campaign", campaignRoutes);
-
+app.use('/distance', distanceRoute);
 export default app;

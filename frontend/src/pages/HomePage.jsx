@@ -11,15 +11,22 @@ const HomePage = () => {
   const [userServices, setUserServices] = useState([]);
   const [userStores, setUserStores] = useState([]);
   const [topStores, setTopStores] = useState([]);
-  const [filterType, setFilterType] = useState('none'); // 'none' | 'rating' | 'service' | 'distance'
+  const [filterType, setFilterType] = useState('none'); // 'none' | 'rating' | 'service'
   const { userData } = useContext(UserDataContext);
+
+  // Get selected user address (first one or selected)
+  const selectedLocationIdx = Number(localStorage.getItem('selectedLocationIdx')) || 0;
+  const userAddresses = userData?.address || [];
+  const userAddress = userAddresses[selectedLocationIdx];
+  console.log("User Address:", userAddress);
 
   useEffect(() => {
     fetchStores();
     fetchUserHistory();
-  }, []);
+    // eslint-disable-next-line
+  }, [userAddress]);
 
-  // Fetch all stores
+  // Fetch all stores and calculate distance from backend
   const fetchStores = async (query = '') => {
     try {
       const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/stores/getallstores`);
@@ -30,8 +37,34 @@ const HomePage = () => {
             store.storename.toLowerCase().includes(query.toLowerCase())
           );
         }
-        setStores(allStores);
+        console.log("All Stores:", allStores);
+        // For each store, get distance from backend
+        if (userAddress) {
+          const distancePromises = allStores.map(async store => {
+            try {
+              const res = await axios.post(
+                `${import.meta.env.VITE_BASE_URL}/distance/get-distance`,
+                {
+                  userAddress,
+                  storeAddress: store.address
+                }
+              );
+              console.log(`Distance from ${store.storename}:`, res.data.distance);
+              return { ...store, distance: res.data.distance };
+            } catch {
+              return { ...store, distance: null };
+            }
+          });
+          allStores = await Promise.all(distancePromises);
+        }
 
+        // Always sort by distance first
+        allStores = allStores
+          .filter(store => typeof store.distance === 'number')
+          .sort((a, b) => a.distance - b.distance);
+
+        setStores(allStores);
+        console.log("Fetched stores:", allStores);
         // Top rated stores (top 6)
         const sorted = [...allStores].sort((a, b) => (b.rating || 0) - (a.rating || 0));
         setTopStores(sorted.slice(0, 6));
@@ -49,18 +82,29 @@ const HomePage = () => {
     if (!userData?._id) return;
     try {
       const res = await axios.get(
-        `${import.meta.env.VITE_BASE_URL}/users/${userData._id}/bookings`
+        `${import.meta.env.VITE_BASE_URL}/bookings/user/${userData._id}`
+      , {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      }
       );
-      if (res.data && Array.isArray(res.data.bookings)) {
+      if (res.data && Array.isArray(res.data)) {
         // Get unique services and stores from bookings
         const services = [];
         const stores = [];
-        res.data.bookings.forEach(b => {
-          if (b.service && !services.find(s => s._id === b.service._id)) {
-            services.push(b.service);
+        res.data.forEach(b => {
+          if (Array.isArray(b.service)) {
+        b.service.forEach(svc => {
+          if (svc && !services.find(s => s._id === svc._id)) {
+            services.push(svc);
+          }
+        });
+          } else if (b.service && !services.find(s => s._id === b.service._id)) {
+        services.push(b.service);
           }
           if (b.store && !stores.find(s => s._id === b.store._id)) {
-            stores.push(b.store);
+        stores.push(b.store);
           }
         });
         setUserServices(services);
@@ -78,13 +122,12 @@ const HomePage = () => {
     fetchStores(searchQuery);
   };
 
-  // Filtering logic
+  // Filtering logic: always sort by distance first, then apply other filters
   useEffect(() => {
     let filtered = [...stores];
     if (filterType === 'rating') {
       filtered = filtered.sort((a, b) => (b.rating || 0) - (a.rating || 0));
     } else if (filterType === 'service') {
-      // Show stores that have at least one of the user's previously booked services
       if (userServices.length > 0) {
         filtered = filtered.filter(store =>
           store.services &&
@@ -93,12 +136,9 @@ const HomePage = () => {
           )
         );
       }
-    } else if (filterType === 'distance') {
-      // Assuming store.distance is available (in km)
-      filtered = filtered
-        .filter(store => typeof store.distance === 'number')
-        .sort((a, b) => a.distance - b.distance);
     }
+    // Always keep sorted by distance
+    filtered = filtered.sort((a, b) => a.distance - b.distance);
     setFilteredStores(filtered);
   }, [filterType, stores, userServices]);
 
@@ -150,14 +190,6 @@ const HomePage = () => {
           onClick={() => setFilterType('service')}
         >
           Services You Booked
-        </button>
-        <button
-          className={`border px-4 py-1 rounded-full text-gray-700 bg-white shadow-sm ${
-            filterType === 'distance' ? 'border-red-400 text-red-500' : ''
-          }`}
-          onClick={() => setFilterType('distance')}
-        >
-          Nearest
         </button>
       </div>
 

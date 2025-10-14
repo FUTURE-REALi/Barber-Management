@@ -3,6 +3,7 @@ import axios from 'axios';
 import { UserDataContext } from '../context/UserContext';
 import { Link } from 'react-router-dom';
 import SearchBox from '../components/HomePageComponents/SearchBox';
+import SalonMap from '../components/MapComponents/SalonMap';
 
 const HomePage = () => {
   const [stores, setStores] = useState([]);
@@ -11,68 +12,52 @@ const HomePage = () => {
   const [userServices, setUserServices] = useState([]);
   const [userStores, setUserStores] = useState([]);
   const [topStores, setTopStores] = useState([]);
-  const [filterType, setFilterType] = useState('none'); // 'none' | 'rating' | 'service'
+  const [filterType, setFilterType] = useState('none');
   const { userData } = useContext(UserDataContext);
 
-  // Get selected user address (first one or selected)
-  const selectedLocationIdx = Number(localStorage.getItem('selectedLocationIdx')) || 0;
-  const userAddresses = userData?.address || [];
-  const userAddress = userAddresses[selectedLocationIdx];
-  console.log("User Address:", userAddress);
+  // Get user's current location using browser geolocation
+  const [userLocation, setUserLocation] = useState(null);
+
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        pos => {
+          setUserLocation({
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude
+          });
+        },
+        () => {
+          setUserLocation(null); // fallback if denied
+        }
+      );
+    }
+  }, []);
 
   useEffect(() => {
     fetchStores();
     fetchUserHistory();
-  }, [userAddress]);
+  }, []);
 
-  // Fetch all stores and calculate distance from backend
+  // Fetch all stores
   const fetchStores = async (query = '') => {
     try {
       const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/stores/getallstores`);
-      if (response.status === 200) {
-        let allStores = response.data.stores;
-        if (query) {
-          allStores = allStores.filter(store =>
-            store.storename.toLowerCase().includes(query.toLowerCase())
-          );
-        }
-        console.log("All Stores:", allStores);
-        // For each store, get distance from backend
-        if (userAddress) {
-          const distancePromises = allStores.map(async store => {
-            try {
-              const res = await axios.post(
-                `${import.meta.env.VITE_BASE_URL}/distance/get-distance`,
-                {
-                  userAddress,
-                  storeAddress: store.address
-                }
-              );
-              console.log(`Distance from ${store.storename}:`, res.data.distance);
-              return { ...store, distance: res.data.distance };
-            } catch {
-              return { ...store, distance: null };
-            }
-          });
-          allStores = await Promise.all(distancePromises);
-        }
-
-        // Always sort by distance first
-        allStores = allStores
-          .filter(store => typeof store.distance === 'number')
-          .sort((a, b) => a.distance - b.distance);
-
-        setStores(allStores);
-        console.log("Fetched stores:", allStores);
-        // Top rated stores (top 6)
-        const sorted = [...allStores].sort((a, b) => (b.rating || 0) - (a.rating || 0));
-        setTopStores(sorted.slice(0, 6));
-        setFilteredStores(allStores);
+      let allStores = response.data.stores;
+      if (query) {
+        allStores = allStores.filter(store =>
+          store.storename.toLowerCase().includes(query.toLowerCase())
+        );
       }
-    } catch (error) {
+      setStores(allStores);
+      setFilteredStores(allStores);
+      // Top rated stores (top 6)
+      const sorted = [...allStores].sort((a, b) => (b.rating || 0) - (a.rating || 0));
+      setTopStores(sorted.slice(0, 6));
+    } catch {
       setStores([]);
-      setTopStores([]);
       setFilteredStores([]);
+      setTopStores([]);
     }
   };
 
@@ -121,7 +106,7 @@ const HomePage = () => {
     fetchStores(searchQuery);
   };
 
-  // Filtering logic: always sort by distance first, then apply other filters
+  // Filtering logic (apply rating/service filters only)
   useEffect(() => {
     let filtered = [...stores];
     if (filterType === 'rating') {
@@ -136,8 +121,6 @@ const HomePage = () => {
         );
       }
     }
-    // Always keep sorted by distance
-    filtered = filtered.sort((a, b) => a.distance - b.distance);
     setFilteredStores(filtered);
   }, [filterType, stores, userServices]);
 
@@ -251,6 +234,11 @@ const HomePage = () => {
             ))}
           </div>
         )}
+      </div>
+
+      {/* Map Section */}
+      <div className="max-w-5xl mx-auto mt-8 mb-8">
+        <SalonMap stores={filteredStores} userLocation={userLocation} />
       </div>
 
       {/* Store Cards */}

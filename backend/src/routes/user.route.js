@@ -2,7 +2,6 @@ import express from 'express';
 import {body} from 'express-validator';
 import {getUserProfile, loginUser, logoutUser, registerUser, updateUserAddress} from '../controllers/user.controller.js';
 import {authUser} from '../middlewares/auth.middleware.js';
-import { getBookingsByUser } from '../controllers/bookings.controller.js';
 
 const router = express.Router();
 
@@ -26,7 +25,5 @@ router.get('/logout', authUser,logoutUser);
 router.get('/profile', authUser, getUserProfile);
 
 router.put('/update-location/:id', authUser, updateUserAddress);
-
-router.get('/bookings/:id',authUser, getBookingsByUser);
 
 export default router;

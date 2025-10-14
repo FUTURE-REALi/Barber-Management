@@ -110,20 +110,3 @@ export const updateUserAddress = async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 };
-
-export const getUserBookings = async (req, res) => {
-    const userId = req.params.id;
-    if (!userId) {
-        return res.status(400).json({ message: "User ID is required" });
-    }
-    try {
-        const user = await userModel.findById(userId).populate('bookings');
-        if (!user) return res.status(404).json({ message: "User not found" });
-        if (!user.bookings || user.bookings.length === 0) {
-            return res.status(404).json({ message: "No bookings found for this user" });
-        }
-        res.status(200).json({ bookings: user.bookings });
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
-}

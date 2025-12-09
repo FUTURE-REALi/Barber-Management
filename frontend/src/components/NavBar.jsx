@@ -41,20 +41,27 @@ const NavBar = () => {
   const toggleLocationDropdown = () => setShowLocationDropdown(!showLocationDropdown);
 
   return (
-    <div className="w-full bg-[#FFA725]">
-      <nav className="bg-[#FFA725] p-4">
-        <div className="container mx-auto flex justify-between items-center">
-          <Link to="/" className="text-white text-2xl font-bold">
-            PocketSalon
-          </Link>
-          <div className="flex space-x-4 text-lg items-center">
-            <Link to="/" className="text-white hover:text-gray-400">
+    <div className="w-full bg-[#FFFFFF]">
+      <nav className="bg-[#FFFFFF] py-3 px-6">
+        <div className="container mx-auto flex justify-between items-center text-[#333333] font-inter max-h-[42px]">
+          <div>
+            <Link to="/" className="text-2xl hover:text-[#5A2C7B] ">
+              <img
+                src="/Logo.png"
+                alt="PocketSalon Logo"
+                className="h-16"
+                style={{ backgroundColor: '#FFFFFF' }}
+              />
+            </Link>
+          </div>
+          <div className="flex space-x-8 text-lg items-center">
+            <Link to="/" className="hover:text-[#5A2C7B] ">
               Home
             </Link>
             {/* Location Switcher */}
-            <div className="relative">
+            <div className="relative hover:text-[#5A2C7B] ">
               <button
-                className="text-white hover:text-gray-400 flex items-center"
+                className="flex items-center"
                 onClick={toggleLocationDropdown}
                 onBlur={() => setTimeout(() => setShowLocationDropdown(false), 150)}
               >
@@ -83,16 +90,16 @@ const NavBar = () => {
                 </div>
               )}
             </div>
-            <Link to="/history" className="text-white hover:text-gray-400">
-              History
+            <Link to="/history" className=" hover:text-[#5A2C7B] ">
+              Appointments
             </Link>
-            <Link to="/checkoutcart" className="text-white hover:text-gray-400">
-              Checkout Cart
+            <Link to="/checkoutcart" className="hover:text-[#5A2C7B]  ">
+              Salons
             </Link>
             <div className="relative">
               <Link
                 to="/getuserprofile"
-                className="text-white hover:text-gray-400 cursor-pointer"
+                className="  cursor-pointer"
                 onMouseEnter={toggleDropdown}
                 onMouseLeave={toggleDropdown}
               >
@@ -112,6 +119,32 @@ const NavBar = () => {
                 </div>
               )}
             </div>
+          </div>
+          <div className='flex space-x-8 text-lg items-center'>
+            <Link to="/" className="  flex items-center hover:text-[#5A2C7B] ">
+              <span className="material-icons text-2xl">search</span>
+            </Link>
+            <Link to="/checkoutcart" className="  flex items-center hover:text-[#5A2C7B] ">
+              <span className="material-icons text-2xl">shopping_cart</span>
+            </Link>
+            <Link to="/getuserprofile" className="flex items-center hover:text-[#5A2C7B]">
+              <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-gray-300 bg-white flex items-center justify-center">
+                <img
+                  src={userData?.profilePhoto || "https://reactjs.org/logo-og.png"}
+                  alt="Profile"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </Link>
+            {/* Horizontal Toggle Button */}
+            <label className="flex items-center cursor-pointer">
+              <div className="relative">
+                <input type="checkbox" className="sr-only peer" />
+                <div className="w-12 h-6 bg-gray-300 rounded-full peer-checked:bg-orange-400 transition-colors"></div>
+                <div className="absolute left-0 top-0 w-6 h-6 bg-white rounded-full shadow peer-checked:translate-x-6 transition-transform"></div>
+              </div>
+              <span className="ml-2 ">Dark</span>
+            </label>
           </div>
         </div>
       </nav>

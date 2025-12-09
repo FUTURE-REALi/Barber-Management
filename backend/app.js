@@ -5,7 +5,11 @@ import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import connectDB from './src/config/db.js';
+import connectCloudinary from './src/config/cloud.js';
+
+
 connectDB();
+connectCloudinary();
 
 const app = express();
 app.use(express.json());
@@ -32,7 +36,7 @@ import orderCartRoute from './src/routes/orderCart.route.js';
 import paymentRoute from './src/routes/payment.route.js';
 import promocodeRoutes from "./src/routes/promocode.route.js";
 import campaignRoutes from "./src/routes/campaign.route.js";
-import distanceRoute from './src/routes/distance.route.js';
+import cloudRoute from './src/routes/cloud.route.js';
 
 app.use('/users', userRoute);
 app.use('/stores', storeRoute);
@@ -43,5 +47,5 @@ app.use('/order-cart', orderCartRoute);
 app.use('/payment',paymentRoute);
 app.use("/promocode", promocodeRoutes);
 app.use("/campaign", campaignRoutes);
-app.use('/distance', distanceRoute);
+app.use('/upload',cloudRoute);
 export default app;

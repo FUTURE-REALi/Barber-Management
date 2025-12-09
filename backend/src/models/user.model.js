@@ -51,6 +51,10 @@ const userSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: "OrderCart"
     },
+    image: {
+        type: String,
+        default: ""
+    }
 });
 
 userSchema.pre("save", async function(next){

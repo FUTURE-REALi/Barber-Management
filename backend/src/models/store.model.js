@@ -71,6 +71,14 @@ const storeSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'Booking',
     }],
+    thumbnail: {
+        type: String,
+        default: null,
+    },
+    Images: [{
+        type: String,
+        default: null,
+    }],
 });
 
 storeSchema.pre("save", async function(next){

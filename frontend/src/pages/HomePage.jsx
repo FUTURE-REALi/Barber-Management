@@ -146,15 +146,22 @@ const HomePage = () => {
   return (
     <div className="min-h-screen w-full bg-gray-50">
       {/* Top bar with centered search */}
-      <div className="w-full bg-white shadow-sm px-4 py-4 sticky top-0 z-10">
-        <div className="max-w-5xl mx-auto flex justify-center">
-          <div className="w-[1000px]">
-            <SearchBox
-              searchQuery={searchQuery}
-              setSearchQuery={setSearchQuery}
-              onSearch={handleSearch}
-            />
-          </div>
+      <div className="w-full h-60 flex justify-center items-center relative shadow-sm top-0 z-10 overflow-hidden">
+        {/* background image stretched to fill the div (no black bars from sizing) */}
+        <img
+          src="/SearchBox.png"
+          alt="search background"
+          className="absolute inset-0 w-full h-full object-fill pointer-events-none"
+        />
+        {/* Optional subtle overlay for input readability — remove or adjust opacity if you don't want any darkening */}
+        {/* <div className="absolute inset-0 bg-black/10 pointer-events-none" /> */}
+
+        <div className="w-[1000px] flex items-center relative z-10">
+          <SearchBox
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            onSearch={handleSearch}
+          />
         </div>
       </div>
 

@@ -86,7 +86,7 @@ export const logoutStore = async (req, res, next) => {
 }
 
 export const toggleStatus = async (req, res, next) => {
-    const store = await storeModel.findById(req.store._id);
+    const store = await storeModel.findById(req.params.storeId);
     if (!store) {
         return res.status(404).json({ error: "Store not found" });
     }

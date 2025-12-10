@@ -28,6 +28,10 @@ const storeServiceSchema = new Schema({
         default: 0,
         min: 0,
         max: 100
+    },
+    image: {
+        type: Schema.Types.ObjectId,
+        ref: "MultipleCloud",
     }
 });
 

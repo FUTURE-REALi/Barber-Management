@@ -11,62 +11,80 @@ const BookOnline = ({ storeId }) => {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [cart, setCart] = useState([]);
   const [showAnim, setShowAnim] = useState(false);
+  const [loading, setLoading] = useState(true);
   const rightRef = useRef(null);
   const sectionRefs = useRef([]);
 
-  // Fetch store services
+  // Fetch store services - simplified
   useEffect(() => {
     const fetchStoreServices = async () => {
+      if (!storeId) return;
+      
+      setLoading(true);
       try {
         const res = await axios.get(
           `${import.meta.env.VITE_BASE_URL}/store-services/get-store-services/${storeId}`
         );
-        if (res.data && Array.isArray(res.data)) {
-          setStoreServices(res.data);
-          const grouped = {};
-          res.data.forEach(ss => {
-            const cat = ss.service?.category || 'All Services';
-            if (!grouped[cat]) grouped[cat] = [];
-            grouped[cat].push(ss);
-          });
-          const cats = Object.keys(grouped).map(cat => ({
-            name: cat,
-            items: grouped[cat]
-          }));
-          setCategories(cats);
-          setSelectedCategory(cats[0]?.name || '');
-        }
+        
+        const services = res.data || [];
+        setStoreServices(services);
+        
+        // Group by category
+        const grouped = {};
+        services.forEach(ss => {
+          const cat = ss.service?.category || 'All Services';
+          if (!grouped[cat]) grouped[cat] = [];
+          grouped[cat].push(ss);
+        });
+        
+        const cats = Object.keys(grouped).map(cat => ({
+          name: cat,
+          items: grouped[cat]
+        }));
+        
+        setCategories(cats);
+        setSelectedCategory(cats[0]?.name || '');
       } catch (err) {
+        console.error('Failed to fetch services:', err);
         setStoreServices([]);
         setCategories([]);
+      } finally {
+        setLoading(false);
       }
     };
-    if (storeId) fetchStoreServices();
+    
+    fetchStoreServices();
   }, [storeId]);
 
   // Fetch reviews
   useEffect(() => {
     const fetchReviews = async () => {
+      if (!storeId) return;
+      
       try {
         const res = await axios.get(
           `${import.meta.env.VITE_BASE_URL}/stores/${storeId}/reviews`
         );
-        if (res.data && Array.isArray(res.data.ratings)) {
-          const reviewsObj = {};
-          res.data.ratings.forEach(r => {
-            if (r.service) {
-              if (!reviewsObj[r.service]) reviewsObj[r.service] = [];
-              reviewsObj[r.service].push(r);
-            }
-          });
-          setReviews(reviewsObj);
-        }
+        
+        const reviewsObj = {};
+        const ratings = res.data?.ratings || [];
+        
+        ratings.forEach(r => {
+          if (r.service) {
+            if (!reviewsObj[r.service]) reviewsObj[r.service] = [];
+            reviewsObj[r.service].push(r);
+          }
+        });
+        
+        setReviews(reviewsObj);
       } catch (err) {
+        console.error('Failed to fetch reviews:', err);
         setReviews({});
       }
     };
-    if (storeId) fetchReviews();
-  }, [storeId, storeServices]);
+    
+    fetchReviews();
+  }, [storeId]);
 
   const filteredCategories = categories.map(cat => ({
     ...cat,
@@ -86,6 +104,7 @@ const BookOnline = ({ storeId }) => {
     if (!rightRef.current) return;
     const scrollTop = rightRef.current.scrollTop;
     let foundIdx = 0;
+    
     for (let i = 0; i < sectionRefs.current.length; i++) {
       const ref = sectionRefs.current[i];
       if (ref) {
@@ -95,6 +114,7 @@ const BookOnline = ({ storeId }) => {
         }
       }
     }
+    
     if (filteredCategories[foundIdx] && filteredCategories[foundIdx].name !== selectedCategory) {
       setSelectedCategory(filteredCategories[foundIdx].name);
     }
@@ -152,6 +172,18 @@ const BookOnline = ({ storeId }) => {
     const sum = serviceReviews.reduce((acc, r) => acc + (r.rating || 0), 0);
     return (sum / serviceReviews.length).toFixed(1);
   };
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-gray-50">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mb-4"></div>
+          <p className="text-gray-600 font-semibold">Loading services...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex w-full h-screen bg-gray-50 rounded-lg shadow-lg overflow-hidden">
@@ -238,11 +270,14 @@ const BookOnline = ({ storeId }) => {
                   </div>
                 ) : (
                   cat.items.map((ss) => {
+                    if (!ss) return null;
+                    
                     const qty = getCartQty(ss);
                     const hasDiscount = ss.discount && ss.discount > 0;
                     const discountedPrice = getDiscountedPrice(ss);
                     const avgRating = getAverageRating(ss.service?._id);
                     const reviewCount = reviews[ss.service?._id]?.length || 0;
+                    const imageUrl = ss?.image?.image?.[0]?.url || null;
 
                     return (
                       <div
@@ -253,10 +288,10 @@ const BookOnline = ({ storeId }) => {
                           {/* Service Image */}
                           <div className="relative flex-shrink-0">
                             <div className="w-32 h-32 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg overflow-hidden flex items-center justify-center group-hover:shadow-lg transition-shadow">
-                              {ss.service?.image ? (
+                              {imageUrl ? (
                                 <img
-                                  src={ss.service.image}
-                                  alt={ss.service?.name}
+                                  src={imageUrl}
+                                  alt={ss.service?.name || "Service"}
                                   className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                                 />
                               ) : (

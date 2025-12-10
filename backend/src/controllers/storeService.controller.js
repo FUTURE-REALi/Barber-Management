@@ -1,13 +1,11 @@
 import StoreService from '../models/storeService.model.js';
 import storeModel from '../models/store.model.js';
+import { uploadFileToCloud } from './cloud.controller.js';
 
 export const addStoreService = async (req, res) => {
   const storeId = req.store?._id; // comes from authStore middleware
-  const { service, price, duration } = req.body;
-  console.log("[addStoreService] storeId:", storeId, "service:", service, "price:", price, "duration:", duration);
-
-  console.log("[addStoreService] Request body:", req.body);
-  console.log("[addStoreService] Request store:", req.store);
+  const { service, price, duration,image } = req.body;
+  console.log("[addStoreService req.body]:", req.body);
   if (!storeId || !service || price == null || duration == null) {
     console.log("[addStoreService] Store ID, service, price, or duration is missing");
     return res.status(400).json({ error: "All fields are required" });
@@ -16,7 +14,7 @@ export const addStoreService = async (req, res) => {
     let storeService = await StoreService.findOne({ store: storeId, service });
     console.log("[addStoreService] Checking for existing StoreService:", storeService);
     if (!storeService) {
-      storeService = await StoreService.create({ store: storeId, service, price, duration });
+      storeService = await StoreService.create({ store: storeId, service, price, duration,image });
       console.log("[addStoreService] StoreService created:", storeService);
       const storeDoc = await storeModel.findById(storeId);
       if (storeDoc && !storeDoc.services.includes(storeService._id)) {
@@ -41,7 +39,8 @@ export const getStoreServices = async (req, res) => {
   try {
     const services = await StoreService.find({store: storeId})
       .populate('service', 'name description')
-      .select('price duration service discount');
+      .populate('image','image')
+      .select('price duration service discount image');
     return res.status(200).json(services);
   } catch (error) {
     return res.status(500).json({message: error.message});

@@ -1,6 +1,6 @@
 import express from "express";
 import { body} from "express-validator";
-import {createStoreReview, getAllStores, getStore, getStoreAverageRating, getStoreBookings, getStorebyServices, getStoreInsights, getStoreProfile, getStoreReviews, includedServices, loginStore, logoutStore, registerStore, updateBookingStatus, updateStore, getPayoutStats} from "../controllers/store.controller.js";
+import {createStoreReview, getAllStores, getStore, getStoreAverageRating, getStoreBookings, getStorebyServices, getStoreInsights, getStoreProfile, getStoreReviews, includedServices, loginStore, logoutStore, registerStore, updateBookingStatus, updateStore, getPayoutStats, toggleStatus} from "../controllers/store.controller.js";
 import { authStore, authUser } from "../middlewares/auth.middleware.js";
 import { addStoreService } from "../controllers/storeService.controller.js";
 
@@ -46,4 +46,5 @@ router.get('/getstorebookings',authStore,getStoreBookings);
 router.put('/updatebookingstatus/:bookingId', authStore, updateBookingStatus);
 router.get('/insights/:storeId', authStore, getStoreInsights);
 router.get('/payout-stats/:storeId', getPayoutStats);
+router.patch('/update-status/:storeId', authStore, toggleStatus);
 export default router;

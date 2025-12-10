@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import axios from "axios";
+import { StoreDataContext } from "../../context/StoreContext";
 
 const tabs = [
   { label: "Preparing", value: "confirmed" },
@@ -14,6 +15,8 @@ const OrdersSection = () => {
   const [actionLoading, setActionLoading] = useState({});
   const [activeTab, setActiveTab] = useState("confirmed");
   const [search, setSearch] = useState("");
+  const { storeData, setStoreData } = useContext(StoreDataContext);
+  const [currStatus, setIsCurrStatus] = useState(storeData.status);
 
   useEffect(() => {
     fetchBookings();
@@ -67,6 +70,31 @@ const OrdersSection = () => {
     }
     setActionLoading((prev) => ({ ...prev, [bookingId]: false }));
   };
+
+  const handleStoreStatusToggle = async () => {
+    if (!storeData?._id) return;
+    try {
+      const response = await axios.patch(
+        `${import.meta.env.VITE_BASE_URL}/stores/update-status/${storeData._id}`,
+        {},
+        {
+          withCredentials: true,
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      
+      if (response.status === 200) {
+        setStoreData({ ...storeData, status: !storeData.status });
+        setIsCurrStatus(!currStatus);
+      }
+    } catch (error) {
+      console.error('Failed to toggle store status:', error);
+      alert('Failed to update store status');
+      alert(error)
+  };
+};
 
   // Helper to get all service names from a booking
   const getServiceNames = (booking) => {
@@ -143,30 +171,62 @@ const OrdersSection = () => {
             </button>
           ))}
         </div>
+        
         <div className="flex items-center gap-4">
+          {/* Store Status Toggle */}
+          {storeData && (
+            <div className="flex items-center gap-3 bg-gray-50 px-4 py-2 rounded-lg border">
+              <span className={`text-sm font-semibold ${storeData.status ? 'text-green-600' : 'text-red-600'}`}>
+                {storeData.status ? 'Open' : 'Closed'}
+              </span>
+              <button
+                onClick={handleStoreStatusToggle}
+                value={currStatus}
+                className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors ${
+                  storeData.status ? 'bg-green-500' : 'bg-gray-300'
+                } ${currStatus ? 'opacity-50' : 'cursor-pointer'}`}
+              >
+                <span
+                  className={`inline-block w-4 h-4 transform transition-transform bg-white rounded-full ${
+                    storeData.status ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </div>
+          )}
+          
           <input
             type="text"
             placeholder="Search orders, customer or service"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="px-3 py-2 border rounded text-sm bg-gray-50 focus:outline-none"
+            className="px-3 py-2 border rounded text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-400"
             style={{ minWidth: 220 }}
           />
         </div>
       </div>
+
       {/* Orders List */}
       <div className="flex flex-col gap-6 p-8">
-        {loading && <div>Loading bookings...</div>}
-        {error && <div className="text-red-500 mb-4">{error}</div>}
+        {loading && (
+          <div className="flex items-center justify-center py-12">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+            <span className="ml-3 text-gray-600">Loading bookings...</span>
+          </div>
+        )}
+        {error && <div className="text-red-500 mb-4 bg-red-50 p-4 rounded">{error}</div>}
         {!loading && !error && filteredBookings.length === 0 && (
-          <div>No bookings found for this store.</div>
+          <div className="text-center py-12 text-gray-500">
+            <span className="material-icons text-5xl text-gray-300">inbox</span>
+            <p className="mt-2">No bookings found for this store.</p>
+          </div>
         )}
         {!loading &&
           filteredBookings.length > 0 &&
           filteredBookings.map((b) => (
             <div
               key={b._id}
-              className="bg-white rounded-xl shadow border p-6 flex flex-col md:flex-row gap-6"
+              className="bg-white rounded-xl shadow border p-6 flex flex-col md:flex-row gap-6 hover:shadow-lg transition-shadow"
             >
               {/* Left: Order Info */}
               <div className="flex-1 min-w-[250px]">
@@ -185,11 +245,11 @@ const OrdersSection = () => {
                   {b.user?.email}
                 </div>
                 <div className="flex items-center gap-2 text-xs text-gray-400 mb-2">
-                  <span>Date</span>
-                  <span className="w-2 h-2 bg-green-400 rounded-full inline-block"></span>
+                  <span className="material-icons text-sm">event</span>
                   <span>{new Date(b.date).toLocaleString()}</span>
                 </div>
               </div>
+              
               {/* Middle: Service & Payment */}
               <div className="flex-1 min-w-[250px]">
                 <div className="mb-2">{renderServiceList(b)}</div>
@@ -208,19 +268,21 @@ const OrdersSection = () => {
                 {b.status === "confirmed" && (
                   <div className="flex gap-2 mt-3">
                     <button
-                      className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition"
+                      className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition flex items-center gap-1"
                       disabled={actionLoading[b._id]}
                       onClick={() => handleAction(b._id, "completed")}
                     >
+                      <span className="material-icons text-sm">check_circle</span>
                       {actionLoading[b._id] === "completed"
                         ? "Finishing..."
                         : "Finish"}
                     </button>
                     <button
-                      className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
+                      className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition flex items-center gap-1"
                       disabled={actionLoading[b._id]}
                       onClick={() => handleAction(b._id, "cancelled")}
                     >
+                      <span className="material-icons text-sm">cancel</span>
                       {actionLoading[b._id] === "cancelled"
                         ? "Cancelling..."
                         : "Cancel"}
@@ -228,12 +290,14 @@ const OrdersSection = () => {
                   </div>
                 )}
                 {b.status === "completed" && (
-                  <span className="bg-green-100 text-green-700 px-4 py-2 rounded font-semibold mt-3 inline-block">
+                  <span className="bg-green-100 text-green-700 px-4 py-2 rounded font-semibold mt-3 inline-flex items-center gap-1">
+                    <span className="material-icons text-sm">check_circle</span>
                     Finished
                   </span>
                 )}
                 {b.status === "cancelled" && (
-                  <span className="bg-red-100 text-red-700 px-4 py-2 rounded font-semibold mt-3 inline-block">
+                  <span className="bg-red-100 text-red-700 px-4 py-2 rounded font-semibold mt-3 inline-flex items-center gap-1">
+                    <span className="material-icons text-sm">cancel</span>
                     Cancelled
                   </span>
                 )}

@@ -1,6 +1,5 @@
 import StoreService from '../models/storeService.model.js';
 import storeModel from '../models/store.model.js';
-import { uploadFileToCloud } from './cloud.controller.js';
 
 export const addStoreService = async (req, res) => {
   const storeId = req.store?._id; // comes from authStore middleware
@@ -39,7 +38,7 @@ export const getStoreServices = async (req, res) => {
   try {
     const services = await StoreService.find({store: storeId})
       .populate('service', 'name description')
-      .populate('image','image')
+      .populate('image','url')
       .select('price duration service discount image');
     return res.status(200).json(services);
   } catch (error) {

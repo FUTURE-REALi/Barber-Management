@@ -186,13 +186,17 @@ const AddToCart = ({ qty, service, onCartChange, storeId, onCartAnim }) => {
                         className="bg-gray-200 px-3 py-1 rounded text-lg font-bold"
                         onClick={handleRemove}
                         aria-label={`Remove one ${service?.service?.name || 'item'}`}
-                    >-</button>
-                    <span className="font-semibold">{qty}</span>
+                    >
+                        -
+                    </button>
+                    {qty > 0 && <span className="font-semibold">{qty}</span>}
                     <button
                         className="bg-gray-200 px-3 py-1 rounded text-lg font-bold"
                         onClick={handleIncrease}
                         aria-label={`Add one more ${service?.service?.name || 'item'}`}
-                    >+</button>
+                    >
+                        +
+                    </button>
                 </div>
             )}
         </div>

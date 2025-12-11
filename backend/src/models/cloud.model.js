@@ -9,5 +9,10 @@ const multipleCloudSchema = Schema({
     ]
 });
 
-const MultipleCloud = mongoose.model("MultipleCloud", multipleCloudSchema);
-export default MultipleCloud;
+const singleCloudSchema = Schema({
+    url: { type: String, required: true },
+    id: { type: String, required: true },
+})
+
+export const SingleCloud = mongoose.model("SingleCloud", singleCloudSchema);
+export const MultipleCloud = mongoose.model("MultipleCloud", multipleCloudSchema);

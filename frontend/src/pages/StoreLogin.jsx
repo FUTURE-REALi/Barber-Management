@@ -33,6 +33,8 @@ const StoreLogin = () => {
         phone: data.store.phone,
         id: data.store._id,
         services: data.store.services || [],
+        status: data.store.status,
+        images: data.store.images
       }
       setStoreData(newdata);
       localStorage.setItem('token', data.token);

@@ -265,7 +265,7 @@ const MenuSection = () => {
               : s.price;
             
             // Extract image URL safely
-            const imageUrl = s?.image?.image?.[0]?.url || null;
+            const imageUrl = s?.image?.url || null;
 
             return (
               <React.Fragment key={s._id}>

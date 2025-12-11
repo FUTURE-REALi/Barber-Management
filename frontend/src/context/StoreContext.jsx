@@ -15,6 +15,12 @@ const StoreContext = ({children}) => {
     },
     phone: '',
     id: '',
+    status: '',
+    images:{
+      coverImage: '',
+      menu:[],
+      storeImages:[]
+    }
   });
 
   return (

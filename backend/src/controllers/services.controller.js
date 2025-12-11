@@ -1,11 +1,11 @@
 import Service from "../models/services.model.js";
 import { createService } from "../services/services.service.js";
-import { uploadFileToCloud } from "./cloud.controller.js";
+import { uploadMultipleFileToCloud } from "./cloud.controller.js";
 
 export const insertService = async (req, res, next) => {
 
     const {name, description} = req.body;
-    const image = await uploadFileToCloud(req.files);
+    const image = await uploadMultipleFileToCloud(req.files);
 
     if(!name || !description) {
         return res.status(400).json({error: "All fields are required"});

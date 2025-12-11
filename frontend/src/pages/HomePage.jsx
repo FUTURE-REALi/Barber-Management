@@ -15,7 +15,6 @@ const HomePage = () => {
   const [filterType, setFilterType] = useState('none');
   const { userData } = useContext(UserDataContext);
 
-  // Get user's current location using browser geolocation
   const [userLocation, setUserLocation] = useState(null);
 
   useEffect(() => {
@@ -28,7 +27,7 @@ const HomePage = () => {
           });
         },
         () => {
-          setUserLocation(null); // fallback if denied
+          setUserLocation(null);
         }
       );
     }
@@ -39,7 +38,6 @@ const HomePage = () => {
     fetchUserHistory();
   }, []);
 
-  // Fetch all stores
   const fetchStores = async (query = '') => {
     try {
       const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/stores/getallstores`);

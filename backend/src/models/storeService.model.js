@@ -31,7 +31,7 @@ const storeServiceSchema = new Schema({
     },
     image: {
         type: Schema.Types.ObjectId,
-        ref: "MultipleCloud",
+        ref: "SingleCloud",
     }
 });
 

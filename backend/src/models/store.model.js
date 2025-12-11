@@ -71,14 +71,20 @@ const storeSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'Booking',
     }],
-    thumbnail: {
-        type: String,
-        default: null,
+    images: {
+        coverImage:{
+            type: Schema.Types.ObjectId,
+            ref: 'SingleCloud',
+        },
+        menu:{
+            type: Schema.Types.ObjectId,
+            ref: 'MultipleCloud',
+        },
+        storeImage:{
+            type: Schema.Types.ObjectId,
+            ref: 'MultipleCloud',
+        }
     },
-    Images: [{
-        type: String,
-        default: null,
-    }],
 });
 
 storeSchema.pre("save", async function(next){

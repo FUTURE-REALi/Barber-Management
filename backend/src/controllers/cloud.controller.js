@@ -1,8 +1,9 @@
 import getDataUri from "../services/bufferGenerator.service.js";
 import cloudinary from 'cloudinary';
-import { createCloudEntry } from "../services/cloud.service.js";
+import { createMultipleCloudEntry, createSingleCloudEntry } from "../services/cloud.service.js";
+import { SingleCloud } from "../models/cloud.model.js";
 
-export const uploadFileToCloud = async(files) => {
+export const uploadMultipleFileToCloud = async(files) => {
     try{
         if (!files || files.length === 0) {
             return new Error('No files to upload');
@@ -19,7 +20,7 @@ export const uploadFileToCloud = async(files) => {
         });
     
         const uploadedImages = await Promise.all(imageUploadPromises);
-        const imageData = createCloudEntry(uploadedImages);
+        const imageData = createMultipleCloudEntry(uploadedImages);
         return imageData;
     }
     catch (error) {
@@ -27,6 +28,26 @@ export const uploadFileToCloud = async(files) => {
         throw new Error("Internal server error");
     }
 };
+
+export const uploadSingleFileToCloud = async(file) => {
+    try{
+        if (!file) {
+            return new Error('No file to upload');
+        }
+        const filebuffer = getDataUri(file);
+        const result = await cloudinary.v2.uploader.upload(filebuffer.content);
+        const uploadedImage = await Promise.resolve({
+            url: result.secure_url,
+            id: result.public_id
+        });
+        const imageData = await createSingleCloudEntry(uploadedImage);
+        return imageData;
+    }
+    catch (error) {
+        console.error("Error uploading file to Cloudinary:", error);
+        throw new Error("Internal server error");
+    }
+}
 export const uploadToCloud = async (req, res) => {
     try {
         if (!req.files || req.files.length === 0) {
@@ -57,3 +78,22 @@ export const uploadToCloud = async (req, res) => {
         res.status(500).json({ message: "Internal server error" });
     }
 };
+
+export const getSingleFileFromCloud = async (req, res) => {
+    try{
+        if(!req.params.id){
+            return res.status(400).json({message: "No file id provided"});
+        }
+        const fileId = req.params.id;
+        const file = await SingleCloud.findById(fileId);
+        const url = file.url;
+        res.status(200).json({
+            message: "File fetched successfully",
+            data: url,
+        });
+    }
+    catch (error) {
+        console.error("Error fetching file from Cloudinary:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+}

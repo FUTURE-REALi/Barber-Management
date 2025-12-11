@@ -270,14 +270,24 @@ const BookOnline = ({ storeId }) => {
                   </div>
                 ) : (
                   cat.items.map((ss) => {
-                    if (!ss) return null;
+                    if (!ss || !ss._id) return null;
                     
                     const qty = getCartQty(ss);
                     const hasDiscount = ss.discount && ss.discount > 0;
                     const discountedPrice = getDiscountedPrice(ss);
                     const avgRating = getAverageRating(ss.service?._id);
                     const reviewCount = reviews[ss.service?._id]?.length || 0;
-                    const imageUrl = ss?.image?.image?.[0]?.url || null;
+                    console.log("ss.image:", ss.image);
+                    console.log("ss: ", ss);
+                    // ✅ FIXED: No optional chaining on array index
+                    let imageUrl = null;
+                    try {
+                      if (ss.image) {
+                        imageUrl = ss.image.url || null;
+                      }
+                    } catch (e) {
+                      imageUrl = null;
+                    }
 
                     return (
                       <div
@@ -366,7 +376,7 @@ const BookOnline = ({ storeId }) => {
                           <div className="mt-4 pt-4 border-t border-gray-100">
                             <p className="text-xs font-semibold text-gray-700 mb-2">Recent Reviews</p>
                             <div className="space-y-1">
-                              {reviews[ss.service?._id]?.slice(0, 2).map((review, i) => (
+                              {reviews[ss.service?._id] && Array.isArray(reviews[ss.service._id]) && reviews[ss.service._id].slice(0, 2).map((review, i) => (
                                 <p key={review._id || i} className="text-xs text-gray-600 line-clamp-2">
                                   <span className="font-semibold">{review.user?.name || 'User'}:</span> {review.reviewText}
                                 </p>

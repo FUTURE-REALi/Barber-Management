@@ -1,7 +1,7 @@
 import express from 'express';
-import uploadFileCloud from '../middlewares/cloud.middleware.js';
-import { uploadToCloud } from '../controllers/cloud.controller.js';
+import { uploadMultipleFileCloud } from '../middlewares/cloud.middleware.js';
+import { uploadMultipleFileToCloud} from '../controllers/cloud.controller.js';
 const router = express.Router();
 
-router.post('/uploadcloud',uploadFileCloud,uploadToCloud);
+router.post('/uploadcloud',uploadMultipleFileCloud,uploadMultipleFileToCloud);
 export default router;

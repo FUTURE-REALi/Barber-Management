@@ -14,10 +14,10 @@ const serviceSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: "Store",
     },
-    image: {
+    image: [{
         type: Schema.Types.ObjectId,
-        ref: "MultipleCloud",
-    }
+        ref: "SingleCloud",
+    }]
 });
 
 serviceSchema.methods.addStore = async function (storeId) {

@@ -10,6 +10,7 @@ import { createStoreService } from "../services/storeService.service.js";
 import { addStoreService, getStoreServices } from "./storeService.controller.js";
 import Booking from "../models/bookings.model.js";
 import userModel from "../models/user.model.js";
+import { uploadSingleFileToCloud } from "./cloud.controller.js";
 
 export const registerStore = async (req, res, next) => {
 
@@ -132,31 +133,30 @@ export const includedServices = async (req, res, next) => {
 }
 
 export const getStore = async (req, res, next) => {
-    const storeId = req.params.storeId || req.query.storeId;
+  const storeId = req.params.storeId || req.query.storeId;
+  if (!storeId) return res.status(400).json({ error: "Store ID is required" });
 
-    if (!storeId) {
-        return res.status(400).json({ error: "Store ID is required" });
-    }
+  try {
+    const store = await storeModel
+      .findById(storeId)
+      .populate({
+        path: "services",
+        populate: [
+          { path: "service", model: "Service", select: "name description" },
+        ],
+        select: "service price duration",
+      })
+      .populate("rating")
+      .populate({ path: "images.coverImage", model: "SingleCloud", select: "url" })
+      .populate({ path: "images.menu", model: "MultipleCloud", select: "url" })
+      .populate({ path: "images.storeImage", model: "MultipleCloud", select: "url" });
 
-    try {
-        const store = await storeModel.findById(storeId)
-            .populate({
-                path: 'services',
-                populate: {
-                    path: 'service',
-                    model: 'Service',
-                    select: 'name description'
-                },
-                select: 'service price duration'
-            })
-            .populate('rating');
-        if (!store) {
-            return res.status(404).json({ error: "Store not found" });
-        }
-        res.status(200).json({ message: "Store retrieved successfully", store });
-    } catch (error) {
-        return res.status(500).json({ error: error.message });
-    }
+    if (!store) return res.status(404).json({ error: "Store not found" });
+    res.status(200).json({ message: "Store retrieved successfully", store });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: error.message });
+  }
 };
 
 export const getAllStores = async (req, res, next) => {
@@ -613,3 +613,20 @@ export const getPayoutStats = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+export const uploadCover = async (req, res, next) => {
+    try{
+        const store = req.store;
+        if (!store) {
+            return res.status(404).json({ error: "Store not found" });
+        }
+        const image = await uploadSingleFileToCloud(req.file);
+        store.images.coverImage = image._id;
+        await store.save();
+        res.status(200).json({ message: "Cover image uploaded successfully", image });
+    }
+    catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+};
+        

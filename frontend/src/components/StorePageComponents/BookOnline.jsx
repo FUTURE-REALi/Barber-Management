@@ -3,154 +3,110 @@ import axios from 'axios';
 import CartAnimation from '../CartAnimation';
 import AddToCart from './AddToCart';
 
-const BookOnline = ({ storeId }) => {
-  const [storeServices, setStoreServices] = useState([]);
-  const [search, setSearch] = useState('');
-  const [reviews, setReviews] = useState({});
-  const [categories, setCategories] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState('');
+const BookOnline = ({ storeData }) => {
   const [cart, setCart] = useState([]);
+  const [search, setSearch] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [reviews, setReviews] = useState({});
+  const [loading, setLoading] = useState(false);
   const [showAnim, setShowAnim] = useState(false);
-  const [loading, setLoading] = useState(true);
   const rightRef = useRef(null);
   const sectionRefs = useRef([]);
 
-  // Fetch store services - simplified
-  useEffect(() => {
-    const fetchStoreServices = async () => {
-      if (!storeId) return;
-      
-      setLoading(true);
-      try {
-        const res = await axios.get(
-          `${import.meta.env.VITE_BASE_URL}/store-services/get-store-services/${storeId}`
-        );
-        
-        const services = res.data || [];
-        setStoreServices(services);
-        
-        // Group by category
-        const grouped = {};
-        services.forEach(ss => {
-          const cat = ss.service?.category || 'All Services';
-          if (!grouped[cat]) grouped[cat] = [];
-          grouped[cat].push(ss);
-        });
-        
-        const cats = Object.keys(grouped).map(cat => ({
-          name: cat,
-          items: grouped[cat]
-        }));
-        
-        setCategories(cats);
-        setSelectedCategory(cats[0]?.name || '');
-      } catch (err) {
-        console.error('Failed to fetch services:', err);
-        setStoreServices([]);
-        setCategories([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchStoreServices();
-  }, [storeId]);
+  const services = storeData?.services || [];
+  const storeId = storeData?._id;
 
-  // Fetch reviews
+  // Fetch reviews on mount
   useEffect(() => {
     const fetchReviews = async () => {
-      if (!storeId) return;
-      
       try {
-        const res = await axios.get(
-          `${import.meta.env.VITE_BASE_URL}/stores/${storeId}/reviews`
-        );
-        
-        const reviewsObj = {};
-        const ratings = res.data?.ratings || [];
-        
-        ratings.forEach(r => {
-          if (r.service) {
-            if (!reviewsObj[r.service]) reviewsObj[r.service] = [];
-            reviewsObj[r.service].push(r);
-          }
-        });
-        
-        setReviews(reviewsObj);
-      } catch (err) {
-        console.error('Failed to fetch reviews:', err);
-        setReviews({});
+        if (storeId) {
+          const response = await axios.get(
+            `${import.meta.env.VITE_BASE_URL}/stores/reviews/${storeId}`,
+            { withCredentials: true }
+          );
+          const reviewsMap = {};
+          (response.data.ratings || []).forEach((review) => {
+            const serviceId = review.service?._id;
+            if (serviceId) {
+              if (!reviewsMap[serviceId]) reviewsMap[serviceId] = [];
+              reviewsMap[serviceId].push(review);
+            }
+          });
+          setReviews(reviewsMap);
+        }
+      } catch (error) {
+        console.error('Error fetching reviews:', error);
       }
     };
-    
     fetchReviews();
   }, [storeId]);
 
-  const filteredCategories = categories.map(cat => ({
-    ...cat,
-    items: cat.items.filter(ss =>
-      ss.service?.name?.toLowerCase().includes(search.toLowerCase())
-    ),
-  }));
+  // Organize services by category
+  const filteredCategories = React.useMemo(() => {
+    const categories = {};
+    services.forEach((service) => {
+      const serviceName = service.service?.name || 'Uncategorized';
+      if (!categories[serviceName]) {
+        categories[serviceName] = [];
+      }
+      categories[serviceName].push(service);
+    });
 
-  const handleCategoryClick = idx => {
-    setSelectedCategory(filteredCategories[idx].name);
-    if (sectionRefs.current[idx]) {
-      sectionRefs.current[idx].scrollIntoView({ behavior: 'smooth', block: 'start' });
+    let result = Object.entries(categories).map(([name, items]) => ({
+      name,
+      items: items.filter(
+        (item) =>
+          !search ||
+          item.service?.name?.toLowerCase().includes(search.toLowerCase()) ||
+          item.service?.description?.toLowerCase().includes(search.toLowerCase())
+      ),
+    }));
+
+    if (search) {
+      result = result.filter((cat) => cat.items.length > 0);
+    }
+
+    return result;
+  }, [services, search]);
+
+  // Set first category as selected
+  useEffect(() => {
+    if (filteredCategories.length > 0 && selectedCategory === null) {
+      setSelectedCategory(filteredCategories[0].name);
+    }
+  }, [filteredCategories, selectedCategory]);
+
+  const handleCategoryClick = (idx) => {
+    if (filteredCategories[idx]) {
+      setSelectedCategory(filteredCategories[idx].name);
+      sectionRefs.current[idx]?.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
-  const handleScroll = () => {
-    if (!rightRef.current) return;
-    const scrollTop = rightRef.current.scrollTop;
-    let foundIdx = 0;
-    
-    for (let i = 0; i < sectionRefs.current.length; i++) {
-      const ref = sectionRefs.current[i];
+  const handleScroll = (e) => {
+    const scrollPosition = e.target.scrollTop;
+    let activeCategory = filteredCategories[0]?.name || null;
+
+    sectionRefs.current.forEach((ref, idx) => {
       if (ref) {
-        const offset = ref.offsetTop - rightRef.current.offsetTop;
-        if (scrollTop >= offset - 20) {
-          foundIdx = i;
+        const elementTop = ref.offsetTop;
+        if (scrollPosition >= elementTop - 100) {
+          activeCategory = filteredCategories[idx]?.name;
         }
       }
-    }
-    
-    if (filteredCategories[foundIdx] && filteredCategories[foundIdx].name !== selectedCategory) {
-      setSelectedCategory(filteredCategories[foundIdx].name);
-    }
-  };
+    });
 
-  const lastScrollCategory = useRef(selectedCategory);
-  useEffect(() => {
-    if (lastScrollCategory.current !== selectedCategory) {
-      lastScrollCategory.current = selectedCategory;
-      const idx = filteredCategories.findIndex(cat => cat.name === selectedCategory);
-      if (idx !== -1 && sectionRefs.current[idx]) {
-        sectionRefs.current[idx].scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    }
-  }, [selectedCategory]);
+    setSelectedCategory(activeCategory);
+  };
 
   const triggerAnim = () => {
     setShowAnim(false);
     setTimeout(() => setShowAnim(true), 10);
   };
 
-  const handleAddToCart = (ss) => {
-    setCart(prev => {
-      const exists = prev.find(item => item._id === ss._id);
-      if (exists) {
-        return prev.map(item =>
-          item._id === ss._id ? { ...item, qty: item.qty + 1 } : item
-        );
-      }
-      return [...prev, { ...ss, qty: 1, storeId }];
-    });
-    triggerAnim();
-  };
-
   const getCartQty = (ss) => {
-    const found = cart.find(item => item._id === ss._id);
+    const found = cart.find((item) => item._id === ss._id);
     return found ? found.qty : 0;
   };
 
@@ -162,8 +118,8 @@ const BookOnline = ({ storeId }) => {
   };
 
   const getShortDescription = (desc, max = 80) => {
-    if (!desc) return "";
-    return desc.length > max ? desc.slice(0, max) + "..." : desc;
+    if (!desc) return '';
+    return desc.length > max ? desc.slice(0, max) + '...' : desc;
   };
 
   const getAverageRating = (serviceId) => {
@@ -173,7 +129,6 @@ const BookOnline = ({ storeId }) => {
     return (sum / serviceReviews.length).toFixed(1);
   };
 
-  // Loading state
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-gray-50">
@@ -185,30 +140,44 @@ const BookOnline = ({ storeId }) => {
     );
   }
 
+  if (services.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 px-6">
+        <div className="bg-gradient-to-br from-orange-50 to-red-50 rounded-full p-8 mb-6 shadow-lg">
+          <span className="material-icons text-7xl text-orange-400">event_busy</span>
+        </div>
+        <h3 className="text-2xl font-bold text-gray-800 mb-2">No Services Available</h3>
+        <p className="text-gray-500 text-center max-w-md">
+          This store hasn't added any services yet. Check back later!
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="flex w-full h-screen bg-gray-50 rounded-lg shadow-lg overflow-hidden">
       {/* Left Sidebar: Categories */}
       <div className="w-64 bg-white border-r border-gray-200 overflow-y-auto" style={{ scrollbarWidth: 'none' }}>
         <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 z-10">
-          <h3 className="text-lg font-bold text-gray-900">Menu</h3>
+          <h3 className="text-lg font-bold text-gray-900">Services</h3>
         </div>
         <ul className="py-2">
           {filteredCategories.map((cat, idx) => (
             <li
               key={cat.name}
-              className={`px-6 py-3 cursor-pointer transition-all duration-200 border-l-4 flex items-center justify-between group
-                ${selectedCategory === cat.name
+              className={`px-6 py-3 cursor-pointer transition-all duration-200 border-l-4 flex items-center justify-between group ${
+                selectedCategory === cat.name
                   ? 'bg-gradient-to-r from-orange-50 to-red-50 border-l-orange-500 text-orange-600'
                   : 'border-l-transparent text-gray-700 hover:bg-gray-50'
-                }`}
+              }`}
               onClick={() => handleCategoryClick(idx)}
             >
               <span className="font-medium text-sm">{cat.name}</span>
-              <span className={`text-xs font-bold px-2 py-1 rounded-full ${
-                selectedCategory === cat.name 
-                  ? 'bg-orange-200 text-orange-700' 
-                  : 'bg-gray-200 text-gray-600 group-hover:bg-gray-300'
-              }`}>
+              <span
+                className={`text-xs font-bold px-2 py-1 rounded-full ${
+                  selectedCategory === cat.name ? 'bg-orange-200 text-orange-700' : 'bg-gray-200 text-gray-600 group-hover:bg-gray-300'
+                }`}
+              >
                 {cat.items.length}
               </span>
             </li>
@@ -227,15 +196,15 @@ const BookOnline = ({ storeId }) => {
         <div className="sticky top-0 bg-white border-b border-gray-200 px-8 py-4 z-10 shadow-sm">
           <div className="flex items-center justify-between gap-6">
             <div className="flex-1">
-              <h2 className="text-3xl font-bold text-gray-900">Order Online</h2>
+              <h2 className="text-3xl font-bold text-gray-900">Book Services</h2>
               <div className="flex items-center gap-6 mt-2">
                 <span className="flex items-center gap-2 text-sm text-gray-600">
-                  <span className="material-icons text-lg">local_shipping</span>
-                  Fast Delivery
+                  <span className="material-icons text-lg">content_cut</span>
+                  Premium Services
                 </span>
                 <span className="flex items-center gap-2 text-sm text-gray-600">
                   <span className="material-icons text-lg">schedule</span>
-                  24 min
+                  Quick Booking
                 </span>
               </div>
             </div>
@@ -243,7 +212,7 @@ const BookOnline = ({ storeId }) => {
               type="text"
               placeholder="Search services..."
               value={search}
-              onChange={e => setSearch(e.target.value)}
+              onChange={(e) => setSearch(e.target.value)}
               className="px-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-400 w-64 transition-all"
             />
           </div>
@@ -251,35 +220,29 @@ const BookOnline = ({ storeId }) => {
 
         {/* Services List */}
         <div className="px-8 py-6 space-y-8">
-          {filteredCategories.map((cat, idx) => (
-            <div
-              key={cat.name}
-              ref={el => (sectionRefs.current[idx] = el)}
-              className="scroll-mt-20"
-            >
-              <div className="flex items-center gap-3 mb-6">
-                <h3 className="text-2xl font-bold text-gray-900">{cat.name}</h3>
-                <div className="h-1 w-12 bg-gradient-to-r from-orange-400 to-red-400 rounded"></div>
-              </div>
+          {filteredCategories.length === 0 ? (
+            <div className="text-center py-20">
+              <span className="material-icons text-gray-300 text-6xl mb-4">search_off</span>
+              <p className="text-gray-400 text-lg font-semibold mt-2">No services found</p>
+            </div>
+          ) : (
+            filteredCategories.map((cat, idx) => (
+              <div key={cat.name} ref={(el) => (sectionRefs.current[idx] = el)} className="scroll-mt-20">
+                <div className="flex items-center gap-3 mb-6">
+                  <h3 className="text-2xl font-bold text-gray-900">{cat.name}</h3>
+                  <div className="h-1 w-12 bg-gradient-to-r from-orange-400 to-red-400 rounded"></div>
+                </div>
 
-              <div className="space-y-4">
-                {cat.items.length === 0 ? (
-                  <div className="text-center py-8">
-                    <span className="material-icons text-gray-300 text-5xl">search_off</span>
-                    <p className="text-gray-400 mt-2">No items found</p>
-                  </div>
-                ) : (
-                  cat.items.map((ss) => {
+                <div className="space-y-4">
+                  {cat.items.map((ss) => {
                     if (!ss || !ss._id) return null;
-                    
+
                     const qty = getCartQty(ss);
                     const hasDiscount = ss.discount && ss.discount > 0;
                     const discountedPrice = getDiscountedPrice(ss);
                     const avgRating = getAverageRating(ss.service?._id);
                     const reviewCount = reviews[ss.service?._id]?.length || 0;
-                    console.log("ss.image:", ss.image);
-                    console.log("ss: ", ss);
-                    // ✅ FIXED: No optional chaining on array index
+
                     let imageUrl = null;
                     try {
                       if (ss.image) {
@@ -301,11 +264,12 @@ const BookOnline = ({ storeId }) => {
                               {imageUrl ? (
                                 <img
                                   src={imageUrl}
-                                  alt={ss.service?.name || "Service"}
+                                  alt={ss.service?.name || 'Service'}
+                                  crossOrigin="anonymous"
                                   className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                                 />
                               ) : (
-                                <span className="material-icons text-6xl text-gray-300">image</span>
+                                <span className="material-icons text-6xl text-gray-300">content_cut</span>
                               )}
                             </div>
                             {hasDiscount && (
@@ -320,12 +284,6 @@ const BookOnline = ({ storeId }) => {
                             <div>
                               <div className="flex items-center gap-3 mb-2">
                                 <h4 className="text-lg font-bold text-gray-900">{ss.service?.name}</h4>
-                                {ss.isBestseller && (
-                                  <span className="px-2 py-1 bg-yellow-100 text-yellow-700 text-xs rounded-full font-semibold flex items-center gap-1">
-                                    <span className="material-icons text-sm">star</span>
-                                    Bestseller
-                                  </span>
-                                )}
                               </div>
 
                               {/* Rating */}
@@ -339,9 +297,7 @@ const BookOnline = ({ storeId }) => {
                                 </div>
                               )}
 
-                              <p className="text-gray-600 text-sm mb-2">
-                                {getShortDescription(ss.service?.description)}
-                              </p>
+                              <p className="text-gray-600 text-sm mb-2">{getShortDescription(ss.service?.description)}</p>
                               <p className="text-gray-500 text-xs flex items-center gap-1">
                                 <span className="material-icons text-base">schedule</span>
                                 {ss.duration} min
@@ -376,21 +332,23 @@ const BookOnline = ({ storeId }) => {
                           <div className="mt-4 pt-4 border-t border-gray-100">
                             <p className="text-xs font-semibold text-gray-700 mb-2">Recent Reviews</p>
                             <div className="space-y-1">
-                              {reviews[ss.service?._id] && Array.isArray(reviews[ss.service._id]) && reviews[ss.service._id].slice(0, 2).map((review, i) => (
-                                <p key={review._id || i} className="text-xs text-gray-600 line-clamp-2">
-                                  <span className="font-semibold">{review.user?.name || 'User'}:</span> {review.reviewText}
-                                </p>
-                              ))}
+                              {reviews[ss.service?._id] &&
+                                Array.isArray(reviews[ss.service._id]) &&
+                                reviews[ss.service._id].slice(0, 2).map((review, i) => (
+                                  <p key={review._id || i} className="text-xs text-gray-600 line-clamp-2">
+                                    <span className="font-semibold">{review.user?.name || 'User'}:</span> {review.reviewText}
+                                  </p>
+                                ))}
                             </div>
                           </div>
                         )}
                       </div>
                     );
-                  })
-                )}
+                  })}
+                </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
 

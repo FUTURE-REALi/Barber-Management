@@ -7,7 +7,7 @@ import Photos from '../components/StorePageComponents/Photos.jsx';
 import ServiceMenu from '../components/StorePageComponents/ServiceMenu.jsx';
 
 const StoreDetailPage = () => {
-  const [storeData, setStoreData] = useState({});
+  const [storeData, setStoreData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [averageRating, setAverageRating] = useState(null);
 
@@ -47,6 +47,17 @@ const StoreDetailPage = () => {
     if (storeId) fetchStoreRating();
   }, [storeId]);
 
+  if (isLoading || !storeData) {
+    return (
+      <div className='flex items-center justify-center h-screen w-full bg-gradient-to-br from-orange-50 to-red-50'>
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-orange-200 border-t-orange-600"></div>
+          <p className="mt-6 text-gray-700 font-semibold text-lg">Loading store details...</p>
+        </div>
+      </div>
+    );
+  }
+
   const {
     storename = '',
     services = [],
@@ -75,17 +86,6 @@ const StoreDetailPage = () => {
     const optionPath = selectedOption.toLowerCase().replace(/\s+/g, '');
     navigate(`${basePath}/${optionPath}`);
   };
-
-  if (isLoading) {
-    return (
-      <div className='flex items-center justify-center h-screen w-full bg-gradient-to-br from-orange-50 to-red-50'>
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-orange-200 border-t-orange-600"></div>
-          <p className="mt-6 text-gray-700 font-semibold text-lg">Loading store details...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="flex flex-col bg-gradient-to-br from-gray-50 via-orange-50/20 to-gray-50 min-h-screen">
@@ -240,10 +240,10 @@ const StoreDetailPage = () => {
       {/* Content Section */}
       <div className="max-w-7xl mx-auto px-6 md:px-12 py-10 w-full">
         <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
-          {option === 'bookonline' && <BookOnline storeId={storeId} />}
-          {option === 'reviews' && <Reviews storeId={storeId} services={services} />}
-          {option === 'photos' && <Photos storeId={storeId} />}
-          {option === 'services' && <ServiceMenu services={services} />}
+          {option === 'bookonline' && <BookOnline storeData={storeData} />}
+          {option === 'reviews' && <Reviews storeData={storeData} />}
+          {option === 'photos' && <Photos storeData={storeData} />}
+          {option === 'services' && <ServiceMenu storeData={storeData} />}
         </div>
       </div>
     </div>

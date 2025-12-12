@@ -235,8 +235,8 @@ const OutletInfoSection = () => {
             `${import.meta.env.VITE_BASE_URL}/stores/storeimage/${storeData.images.storeImage}`,
             { withCredentials: true, headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
           );
-          const urls = Array.isArray(res.data.data?.image)
-            ? res.data.data.image.map((img) => img.url).filter(Boolean)
+          const urls = Array.isArray(res.data.data)
+            ? res.data.data
             : [];
           setStoreExisting(urls);
         }
@@ -270,12 +270,6 @@ const OutletInfoSection = () => {
   const [imagePreviews, setImagePreviews] = useState({ cover: null, menu: [], store: [] });
   const [uploadMessages, setUploadMessages] = useState({ cover: "", menu: "", store: "" });
   const [editingType, setEditingType] = useState(null);
-
-  const safeUrlsFromMultiple = (obj) =>
-    Array.isArray(obj?.image) ? obj.image.map((i) => i?.url).filter(Boolean) : [];
-
-  // const menuExisting = safeUrlsFromMultiple(storeData?.images?.menu);
-  // const storeExisting = safeUrlsFromMultiple(storeData?.images?.storeImage);
 
   const handleAddressChange = (e) => {
     setForm((prev) => ({

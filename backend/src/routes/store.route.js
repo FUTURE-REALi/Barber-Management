@@ -1,10 +1,10 @@
 import express from "express";
 import { body} from "express-validator";
-import {createStoreReview, getAllStores, getStore, getStoreAverageRating, getStoreBookings, getStorebyServices, getStoreInsights, getStoreProfile, getStoreReviews, includedServices, loginStore, logoutStore, registerStore, updateBookingStatus, updateStore, getPayoutStats, toggleStatus, uploadCover} from "../controllers/store.controller.js";
+import {createStoreReview, getAllStores, getStore, getStoreAverageRating, getStoreBookings, getStorebyServices, getStoreInsights, getStoreProfile, getStoreReviews, includedServices, loginStore, logoutStore, registerStore, updateBookingStatus, updateStore, getPayoutStats, toggleStatus, uploadCover, uploadMenu, uploadStoreImages} from "../controllers/store.controller.js";
 import { authStore, authUser } from "../middlewares/auth.middleware.js";
 import { addStoreService } from "../controllers/storeService.controller.js";
-import { uploadSingleFileCloud } from "../middlewares/cloud.middleware.js";
-import { getSingleFileFromCloud } from "../controllers/cloud.controller.js";
+import { uploadMultipleFileCloud, uploadSingleFileCloud } from "../middlewares/cloud.middleware.js";
+import { getMultipleFilesFromCloud, getSingleFileFromCloud } from "../controllers/cloud.controller.js";
 
 const router = express.Router();
 
@@ -37,8 +37,8 @@ router.get('/get-store/:storeId', getStore);
 router.get('/getallstores', getAllStores);
 router.get('/getstorebyservice', getStorebyServices);
 router.put('/update-store', authStore,updateStore);
-router.get('/:storeId/reviews',getStoreReviews);
-router.post('/:storeId/:serviceId/reviews', authUser, [
+router.get('/reviews/:storeId',getStoreReviews);
+router.post('/reviews/:storeId/:serviceId', authUser, [
     body('reviewText').not().isEmpty().withMessage('Review is required'),
     body('rating').isInt({ min: 1, max: 5 }).withMessage('Rating must be between 1 and 5'),
 ],createStoreReview);
@@ -50,5 +50,9 @@ router.get('/insights/:storeId', authStore, getStoreInsights);
 router.get('/payout-stats/:storeId', getPayoutStats);
 router.patch('/update-status/:storeId', authStore, toggleStatus);
 router.post('/upload-cover', authStore,uploadSingleFileCloud,uploadCover);
+router.post('/upload-menu', authStore,uploadMultipleFileCloud,uploadMenu);
+router.post('/upload-store', authStore,uploadMultipleFileCloud,uploadStoreImages);
 router.get('/coverimage/:id', getSingleFileFromCloud);
+router.get('/menuimages/:id', getMultipleFilesFromCloud);
+router.get('/storeimage/:id', getMultipleFilesFromCloud);
 export default router;

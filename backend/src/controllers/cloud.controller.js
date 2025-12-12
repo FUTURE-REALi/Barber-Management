@@ -1,7 +1,7 @@
 import getDataUri from "../services/bufferGenerator.service.js";
 import cloudinary from 'cloudinary';
 import { createMultipleCloudEntry, createSingleCloudEntry } from "../services/cloud.service.js";
-import { SingleCloud } from "../models/cloud.model.js";
+import { MultipleCloud, SingleCloud } from "../models/cloud.model.js";
 
 export const uploadMultipleFileToCloud = async(files) => {
     try{
@@ -94,6 +94,24 @@ export const getSingleFileFromCloud = async (req, res) => {
     }
     catch (error) {
         console.error("Error fetching file from Cloudinary:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+}
+export const getMultipleFilesFromCloud = async (req, res) => {
+    try{
+        if(!req.params.id){
+            return res.status(400).json({message: "No file id provided"});
+        }
+        const fileId = req.params.id;
+        const files = await MultipleCloud.findById(fileId);
+        const urls = files.image.map(img => img.url);
+        res.status(200).json({
+            message: "Files fetched successfully",
+            data: urls,
+        });
+    }   
+    catch (error) {
+        console.error("Error fetching files from Cloudinary:", error);
         res.status(500).json({ message: "Internal server error" });
     }
 }

@@ -10,7 +10,7 @@ import { createStoreService } from "../services/storeService.service.js";
 import { addStoreService, getStoreServices } from "./storeService.controller.js";
 import Booking from "../models/bookings.model.js";
 import userModel from "../models/user.model.js";
-import { uploadSingleFileToCloud } from "./cloud.controller.js";
+import { uploadMultipleFileToCloud, uploadSingleFileToCloud } from "./cloud.controller.js";
 
 export const registerStore = async (req, res, next) => {
 
@@ -308,7 +308,7 @@ export const getStoreReviews = async (req, res, next) => {
         }
         // Get all ratings for this store, populate user and service details
         const ratings = await Rating.find({ store: storeId })
-            .populate('user', 'name email')
+            .populate('user', 'username email')
             .populate('service', 'name description');
         res.status(200).json({ message: "Store reviews retrieved successfully", ratings });
     } catch (error) {
@@ -624,6 +624,38 @@ export const uploadCover = async (req, res, next) => {
         store.images.coverImage = image._id;
         await store.save();
         res.status(200).json({ message: "Cover image uploaded successfully", image });
+    }
+    catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+};
+
+export const uploadMenu = async (req, res, next) => {
+    try{
+        const store = req.store;
+        if (!store) {
+            return res.status(404).json({ error: "Store not found" });
+        }
+        const images = await uploadMultipleFileToCloud(req.files);
+        store.images.menu = images._id;
+        await store.save();
+        res.status(200).json({ message: "Menu images uploaded successfully", images });
+    }
+    catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+};
+
+export const uploadStoreImages = async (req, res, next) => {
+    try{
+        const store = req.store;
+        if (!store) {
+            return res.status(404).json({ error: "Store not found" });
+        }
+        const images = await uploadMultipleFileToCloud(req.files);
+        store.images.storeImage = images._id;
+        await store.save();
+        res.status(200).json({ message: "Store images uploaded successfully", images });
     }
     catch (error) {
         return res.status(500).json({ error: error.message });

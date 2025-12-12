@@ -1,167 +1,221 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
 
-const Reviews = ({ storeId, services }) => {
+const Reviews = ({ storeData }) => {
   const [reviews, setReviews] = useState([]);
-  const [reviewInput, setReviewInput] = useState('');
-  const [ratingInput, setRatingInput] = useState(5);
   const [loading, setLoading] = useState(true);
-  const [serviceId, setServiceId] = useState(services.length > 0 ? services[0]._id : '');
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [newReview, setNewReview] = useState({ rating: 5, reviewText: '', serviceId: '' });
+  const [submitting, setSubmitting] = useState(false);
 
-  const navigate = useNavigate();
+  const storeId = storeData?._id;
+  const services = storeData?.services || [];
 
   useEffect(() => {
     const fetchReviews = async () => {
       setLoading(true);
       try {
-        const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/stores/${storeId}/reviews`);
-        if (res.status === 200) {
-          setReviews(res.data.ratings || []);
-        }
-      } catch (err) {
-        setReviews([]);
+        const response = await axios.get(
+          `${import.meta.env.VITE_BASE_URL}/stores/reviews/${storeId}`,
+          { withCredentials: true }
+        );
+        setReviews(response.data.ratings || []);
+      } catch (error) {
+        console.error('Error fetching reviews:', error);
       } finally {
         setLoading(false);
       }
     };
+
     if (storeId) fetchReviews();
   }, [storeId]);
 
-  const handleSubmit = async (e) => {
+  const handleSubmitReview = async (e) => {
     e.preventDefault();
-    if (!reviewInput.trim()) return;
-    const token = localStorage.getItem('token');
-    if (!token) {
-      alert('You must be logged in to submit a review.');
-      navigate('/login');
+    if (!newReview.serviceId || !newReview.reviewText) {
+      alert('Please select a service and write a review');
       return;
     }
+
+    setSubmitting(true);
     try {
-      const res = await axios.post(
-        `${import.meta.env.VITE_BASE_URL}/stores/${storeId}/${serviceId}/reviews`,
-        {
-          reviewText: reviewInput,
-          rating: ratingInput,
-        },
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        }
+      const response = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/stores/reviews/${storeId}/${newReview.serviceId}`,
+        { rating: newReview.rating, reviewText: newReview.reviewText },
+        { withCredentials: true, headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
       );
-      if (res.status === 201) {
-        setReviews([res.data.rating, ...reviews]);
-        setReviewInput('');
-        setRatingInput(5);
-      }
-    } catch (err) {
-      alert('Failed to submit review. Please try again later.');
+      
+      setReviews([response.data.rating, ...reviews]);
+      setNewReview({ rating: 5, reviewText: '', serviceId: '' });
+      setShowReviewForm(false);
+      alert('Review submitted successfully!');
+    } catch (error) {
+      console.error('Error submitting review:', error);
+      alert(error.response?.data?.error || 'Failed to submit review');
+    } finally {
+      setSubmitting(false);
     }
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-orange-200 border-t-orange-600 mb-4"></div>
+          <p className="text-gray-600 font-semibold">Loading reviews...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="w-full max-w-4xl mx-auto bg-white">
-      {/* Write Review */}
-      <div className="border-b pb-6 mb-6">
-        <h2 className="text-2xl font-bold mb-2">Write a Review</h2>
-        <form onSubmit={handleSubmit} className="flex flex-col md:flex-row gap-2 items-start md:items-end">
-          <textarea
-            className="border rounded p-2 w-full md:w-2/3"
-            placeholder="Write your review..."
-            value={reviewInput}
-            onChange={e => setReviewInput(e.target.value)}
-            rows={2}
-            required
-          />
-          <div className="flex flex-col gap-2 md:ml-4">
-            <select
-              className="border rounded px-2 py-1"
-              value={ratingInput}
-              onChange={e => setRatingInput(Number(e.target.value))}
-            >
-              {[5, 4, 3, 2, 1].map(num => (
-                <option key={num} value={num}>{num}★</option>
-              ))}
-            </select>
-            <select
-              className="border rounded px-2 py-1"
-              value={serviceId}
-              onChange={e => setServiceId(e.target.value)}
-            >
-              {services.map(storeService => (
-                <option key={storeService._id} value={storeService._id}>
-                  {storeService.service?.name}
-                </option>
-              ))}
-            </select>
-            <button
-              type="submit"
-              className="bg-red-500 text-white px-4 py-1 rounded hover:bg-red-600 mt-1"
-              disabled={loading}
-            >
-              Submit
-            </button>
-          </div>
-        </form>
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-gray-200 pb-6">
+        <div>
+          <h2 className="text-3xl font-black text-gray-900 mb-2">Customer Reviews</h2>
+          <p className="text-gray-600 font-medium">
+            {reviews.length} {reviews.length === 1 ? 'Review' : 'Reviews'}
+          </p>
+        </div>
+        <button
+          onClick={() => setShowReviewForm(!showReviewForm)}
+          className="flex items-center gap-2 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+        >
+          <span className="material-icons">rate_review</span>
+          Write Review
+        </button>
       </div>
 
-      {/* Reviews List */}
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-bold">All Reviews</h2>
-          <div className="flex items-center gap-2 text-gray-600">
-            <span className="material-icons">sort</span>
-            <span>Newest First</span>
-          </div>
+      {/* Review Form */}
+      {showReviewForm && (
+        <div className="bg-gradient-to-br from-orange-50 to-red-50 rounded-2xl p-6 border-2 border-orange-200 shadow-lg">
+          <h3 className="text-xl font-black text-gray-900 mb-4 flex items-center gap-2">
+            <span className="material-icons text-orange-600">edit_note</span>
+            Write Your Review
+          </h3>
+          <form onSubmit={handleSubmitReview} className="space-y-4">
+            {/* Service Select */}
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-2">Select Service *</label>
+              <select
+                value={newReview.serviceId}
+                onChange={(e) => setNewReview({ ...newReview, serviceId: e.target.value })}
+                className="w-full px-4 py-3 rounded-xl border-2 border-gray-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all font-medium"
+                required
+              >
+                <option value="">Choose a service...</option>
+                {services.map((ss) => (
+                  <option key={ss._id} value={ss.service?._id}>
+                    {ss.service?.name || 'Unknown Service'}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Rating */}
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-2">Rating *</label>
+              <div className="flex gap-2">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    type="button"
+                    onClick={() => setNewReview({ ...newReview, rating: star })}
+                    className={`text-3xl transition-all transform hover:scale-110 ${
+                      star <= newReview.rating ? 'text-yellow-500' : 'text-gray-300'
+                    }`}
+                  >
+                    ★
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Review Text */}
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-2">Your Review *</label>
+              <textarea
+                value={newReview.reviewText}
+                onChange={(e) => setNewReview({ ...newReview, reviewText: e.target.value })}
+                rows="4"
+                className="w-full px-4 py-3 rounded-xl border-2 border-gray-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all resize-none"
+                placeholder="Share your experience..."
+                required
+              />
+            </div>
+
+            {/* Buttons */}
+            <div className="flex gap-3">
+              <button
+                type="submit"
+                disabled={submitting}
+                className="flex-1 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white py-3 rounded-xl font-bold transition-all shadow-md hover:shadow-lg disabled:opacity-50"
+              >
+                {submitting ? 'Submitting...' : 'Submit Review'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowReviewForm(false)}
+                className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-bold hover:bg-gray-50 transition-all"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
         </div>
-        {loading ? (
-          <p>Loading reviews...</p>
-        ) : reviews.length === 0 ? (
-          <p className="text-gray-500">No reviews yet.</p>
-        ) : (
-          <div className="space-y-8">
-            {reviews.map((review, idx) => (
-              <div key={idx} className="flex flex-row items-start gap-4 border-b pb-8">
-                {/* Avatar */}
-                <div>
-                  <div className="w-14 h-14 rounded-full bg-gray-200 flex items-center justify-center text-2xl text-gray-400">
-                    <span className="material-icons">person</span>
+      )}
+
+      {/* Reviews List */}
+      {reviews.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16">
+          <div className="bg-gradient-to-br from-orange-50 to-red-50 rounded-full p-8 mb-6 shadow-lg">
+            <span className="material-icons text-7xl text-orange-400">rate_review</span>
+          </div>
+          <h3 className="text-2xl font-bold text-gray-800 mb-2">No Reviews Yet</h3>
+          <p className="text-gray-500 text-center max-w-md mb-6">
+            Be the first to share your experience!
+          </p>
+          <button
+            onClick={() => setShowReviewForm(true)}
+            className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-8 py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all"
+          >
+            Write First Review
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {reviews.map((review, index) => (
+            <div
+              key={index}
+              className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all p-6 border border-gray-200"
+            >
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <div className="bg-gradient-to-br from-orange-100 to-red-100 p-3 rounded-full">
+                    <span className="material-icons text-orange-600">person</span>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-gray-900">{review.user?.username || 'Anonymous'}</h4>
+                    <p className="text-sm text-gray-500">{review.service?.name || 'Service'}</p>
                   </div>
                 </div>
-                {/* Review Content */}
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-lg">{review.user?.username || review.user?.fullname || 'Anonymous'}</span>
-                    <span className="text-gray-500 text-sm">0 reviews • 0 Followers</span>
-                    <button className="ml-auto border border-red-300 text-red-500 px-4 py-1 rounded-lg hover:bg-red-50">Follow</button>
-                  </div>
-                  <div className="flex items-center gap-2 mt-2">
-                    <span className="bg-green-600 text-white px-2 py-1 rounded text-sm font-semibold flex items-center">
-                      {review.rating} <span className="ml-1 text-xs">★</span>
+                <div className="flex items-center gap-1">
+                  {[...Array(5)].map((_, i) => (
+                    <span key={i} className={`text-xl ${i < review.rating ? 'text-yellow-500' : 'text-gray-300'}`}>
+                      ★
                     </span>
-                    <span className="bg-gray-100 text-green-900 px-2 py-1 rounded text-xs font-semibold ml-2">DINING</span>
-                    <span className="text-gray-400 text-xs ml-2">{review.createdAt ? new Date(review.createdAt).toLocaleString() : ''}</span>
-                  </div>
-                  <div className="mt-2 text-base text-gray-800">{review.review}</div>
-                  <div className="text-gray-500 text-sm mt-2">0 Votes for helpful, 0 Comments</div>
-                  <div className="flex items-center gap-6 mt-2 text-gray-600">
-                    <button className="flex items-center gap-1 hover:text-red-500">
-                      <span className="material-icons text-base">thumb_up_off_alt</span> Helpful
-                    </button>
-                    <button className="flex items-center gap-1 hover:text-blue-500">
-                      <span className="material-icons text-base">chat_bubble_outline</span> Comment
-                    </button>
-                    <button className="flex items-center gap-1 hover:text-gray-800">
-                      <span className="material-icons text-base">share</span> Share
-                    </button>
-                  </div>
+                  ))}
                 </div>
               </div>
-            ))}
-          </div>
-        )}
-      </div>
+              <p className="text-gray-700 leading-relaxed">{review.review}</p>
+              <p className="text-xs text-gray-400 mt-3">
+                {new Date(review.updatedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
